@@ -199,11 +199,11 @@ const CAMPAIGN_METRICS = [
 
 function StatusBadge({ status }: { status: string }) {
   const colors: Record<string, string> = {
-    'In Development': 'bg-accent-blue/10 border-accent-blue/30 text-accent-blue',
-    Planned: 'border-border-default text-text-tertiary',
+    'In Development': 'bg-[#22c55e]/10 border-[#22c55e]/30 text-[#22c55e]',
+    Planned: 'bg-[#eab308]/10 border-[#eab308]/30 text-[#eab308]',
     Completed: 'border-success text-success',
     'Under Review': 'border-warning text-warning',
-    Ongoing: 'border-text-secondary/30 text-text-secondary',
+    Ongoing: 'bg-[#22c55e]/10 border-[#22c55e]/30 text-[#22c55e]',
   }
 
   return (
@@ -228,28 +228,32 @@ function ProofOfWorkLog({ deliverableId }: { deliverableId: string }) {
   const count = entries.length
 
   return (
-    <div className="mt-6 border-t border-border-subtle pt-4">
+    <div className="mt-6 pt-4">
       <button
         onClick={() => count > 0 && setExpanded(!expanded)}
         className={cn(
-          'flex w-full items-center justify-between py-2 text-left',
-          count > 0 ? 'cursor-pointer' : 'cursor-default'
+          'group relative flex w-full items-center justify-center gap-2.5 overflow-hidden rounded-md border px-5 py-2.5 transition-all duration-normal',
+          count > 0
+            ? 'cursor-pointer border-border-default bg-bg-elevated/60 hover:border-border-hover hover:bg-bg-card'
+            : 'cursor-default border-border-subtle bg-bg-elevated/30',
+          expanded && 'border-border-hover bg-bg-card'
         )}
       >
-        <span className="flex items-center gap-2 font-mono text-label uppercase tracking-wider text-text-tertiary">
-          Proof of Work Log
-          <span className="text-text-tertiary/60">
-            ({count} {count === 1 ? 'entry' : 'entries'})
-          </span>
-        </span>
         {count > 0 && (
           <motion.span
             animate={{ rotate: expanded ? 180 : 0 }}
             transition={{ duration: 0.3, ease: easeOutExpo }}
           >
-            <ChevronDown size={16} className="text-text-tertiary" />
+            <ChevronDown size={13} className="text-text-tertiary transition-colors group-hover:text-text-secondary" />
           </motion.span>
         )}
+        <span className="font-mono text-xs uppercase tracking-[0.15em] text-text-tertiary transition-colors group-hover:text-text-secondary">
+          Work Log
+        </span>
+        <span className="h-1 w-1 rounded-full bg-text-tertiary/40" />
+        <span className="font-mono text-xs text-text-tertiary/60">
+          {count} {count === 1 ? 'entry' : 'entries'}
+        </span>
       </button>
 
       <AnimatePresence initial={false}>
@@ -595,7 +599,7 @@ function PortalContent() {
             href="/"
             className="font-display text-lg font-semibold tracking-tight text-text-primary transition-opacity hover:opacity-80"
           >
-            SOVEREIGN
+            SOVEREIGN MEDIA
           </Link>
           <span className="font-mono text-label uppercase tracking-wider text-text-tertiary">
             Confidential
@@ -728,25 +732,19 @@ function PortalContent() {
                 </p>
               ))}
             </div>
-          </div>
-        </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.2, ease: easeOutExpo }}
-          className="mt-8"
-        >
-          <a
-            href={INVOICE_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 font-mono text-body-sm text-accent-blue transition-opacity hover:opacity-80"
-          >
-            View Invoice
-            <ArrowRight size={14} />
-          </a>
+            <div className="mt-8 flex justify-end">
+              <a
+                href={INVOICE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-md bg-accent-blue px-5 py-2.5 font-mono text-sm font-medium text-white transition-all duration-normal hover:bg-accent-blue/85"
+              >
+                View Invoice
+                <ArrowRight size={14} />
+              </a>
+            </div>
+          </div>
         </motion.div>
       </PageSection>
 

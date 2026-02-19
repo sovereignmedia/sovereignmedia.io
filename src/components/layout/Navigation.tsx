@@ -44,7 +44,7 @@ export function Navigation() {
               href="/"
               className="font-display text-lg font-semibold tracking-tight text-text-primary transition-opacity hover:opacity-80"
             >
-              SOVEREIGN
+              SOVEREIGN MEDIA
             </Link>
 
             {/* Desktop Navigation */}

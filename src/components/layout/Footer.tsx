@@ -12,7 +12,7 @@ export function Footer() {
               href="/"
               className="font-display text-lg font-semibold tracking-tight text-text-primary"
             >
-              SOVEREIGN
+              SOVEREIGN MEDIA
             </Link>
             <p className="mt-2 max-w-xs text-body-sm text-text-tertiary">
               Strategic marketing architecture. Measurable capital outcomes.
