@@ -12,6 +12,7 @@ import {
   GlowOrb,
   GradientLine,
 } from '@/components/effects/GridBackground'
+import { AccessGranted } from '@/components/effects/AccessGranted'
 
 // ============================================
 // Animation config
@@ -74,7 +75,7 @@ const SERVICES = [
 // Stage type
 // ============================================
 
-type Stage = 'loading' | 'splash' | 'password' | 'main'
+type Stage = 'loading' | 'splash' | 'password' | 'granted' | 'main'
 
 // ============================================
 // Splash Stage
@@ -521,6 +522,10 @@ export default function HomePage() {
   }
 
   function handlePasswordSuccess() {
+    setStage('granted')
+  }
+
+  function handleGrantedComplete() {
     setStage('main')
     setTimeout(() => setNavVisible(true), 700)
   }
@@ -534,11 +539,15 @@ export default function HomePage() {
     <>
       {/* Main site content */}
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={stage === 'main' ? { opacity: 1 } : { opacity: 0 }}
+        initial={{ opacity: 0, scale: 1.02 }}
+        animate={
+          stage === 'main'
+            ? { opacity: 1, scale: 1 }
+            : { opacity: 0, scale: 1.02 }
+        }
         transition={{
-          duration: 0.8,
-          delay: stage === 'main' ? 0.4 : 0,
+          duration: 1,
+          delay: stage === 'main' ? 0.3 : 0,
           ease: easeOutExpo,
         }}
       >
@@ -552,6 +561,9 @@ export default function HomePage() {
         )}
         {stage === 'password' && (
           <PasswordStage onSuccess={handlePasswordSuccess} />
+        )}
+        {stage === 'granted' && (
+          <AccessGranted onComplete={handleGrantedComplete} />
         )}
       </AnimatePresence>
     </>
