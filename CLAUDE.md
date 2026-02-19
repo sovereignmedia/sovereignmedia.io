@@ -357,17 +357,43 @@ pnpm lint                   # Lint check
 # Each showcase component needs _meta.ts + index.tsx
 
 # Deployment
-git push origin main        # Auto-deploys to Vercel
+pnpm env:push               # Sync .env.local → Vercel production
+pnpm deploy                 # Deploy to Vercel production
+git push origin main        # Push code to GitHub
 ```
 
 ---
 
-## Environment Variables
+## Environment Variables & Deployment — CRITICAL WORKFLOW
+
+**Single source of truth: `.env.local`**
+
+All passwords and secrets live in `.env.local`. To update passwords or add new env vars:
+
+1. Edit `.env.local` (the ONLY file you touch)
+2. Run `pnpm env:push` (syncs to Vercel, handles cleanup automatically)
+3. Run `pnpm deploy` (deploys with the new values)
+
+**NEVER use `vercel env add` directly.** The Vercel CLI stdin pipe injects trailing newlines into values, causing silent password mismatches. The `scripts/sync-env.sh` script handles this correctly with `printf '%s'`.
+
+**When Claude is asked to change a password or env var:**
+1. Edit the value in `.env.local`
+2. Run `pnpm env:push` to sync to Vercel
+3. Run `pnpm deploy` to deploy
+4. Verify the API returns `{"valid":true}` with a curl test
+
+**API routes use `.trim()` on all password comparisons as a safety net**, but the sync script is the primary defense.
 
 ```env
 # .env.local (NEVER commit this file)
 NEXTAUTH_SECRET=<generate-with-openssl-rand-base64-32>
 NEXTAUTH_URL=http://localhost:3000
+
+# Site-wide password gate
+SITE_PASSWORD=<password>
+
+# Client passwords (format: <CLIENTID_UPPERCASE>_PASSWORD)
+FRONTIERAS_PASSWORD=<password>
 
 # Client access tokens (add per client)
 CLIENT_TOKEN_FRONTIERAS=<token>
