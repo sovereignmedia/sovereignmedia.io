@@ -221,9 +221,9 @@ function ProgressBar({
   const isEmpty = progress === 0
 
   return (
-    <div className="group/progress px-6 pt-5 md:px-8">
+    <div className="group/progress px-6 pb-6 pt-5 md:px-8">
       {/* Label row */}
-      <div className="mb-2 flex items-center justify-between">
+      <div className="mb-2.5 flex items-center justify-between">
         <span
           className={cn(
             'font-mono text-xs tracking-wide',
@@ -244,7 +244,6 @@ function ProgressBar({
 
       {/* Track */}
       <div className="relative h-1 w-full overflow-hidden rounded-full bg-[#1A1A1A]">
-        {/* Fill */}
         {progress > 0 && (
           <motion.div
             className="absolute inset-y-0 left-0 rounded-full"
@@ -275,6 +274,15 @@ function ProgressBar({
           </motion.div>
         )}
       </div>
+
+      {/* Divider below progress bar */}
+      <div
+        className="mt-6 h-px w-full"
+        style={{
+          background:
+            'linear-gradient(to right, transparent, var(--color-border-subtle) 20%, var(--color-border-subtle) 80%, transparent)',
+        }}
+      />
     </div>
   )
 }
@@ -284,20 +292,37 @@ function ProgressBar({
 // ============================================
 
 function StatusBadge({ status }: { status: string }) {
-  const colors: Record<string, string> = {
-    'In Development': 'bg-[#22c55e]/8 border-[#22c55e]/30 text-[#22c55e]',
-    Planned: 'bg-transparent border-border-default text-text-tertiary',
-    Completed: 'bg-[#22c55e]/15 border-[#22c55e]/30 text-[#22c55e]',
-    'Under Review': 'bg-[#ffaa00]/8 border-[#ffaa00]/30 text-[#ffaa00]',
-    Ongoing: 'bg-accent-blue/8 border-accent-blue/30 text-accent-blue',
+  const styles: Record<string, { classes: string; glow?: string }> = {
+    'In Development': {
+      classes: 'bg-[#00CC66]/[0.08] border-[#00CC66]/30 text-[#00CC66]',
+      glow: '0 0 12px rgba(0, 204, 102, 0.15)',
+    },
+    Planned: {
+      classes: 'bg-transparent border-border-default text-text-tertiary',
+    },
+    Completed: {
+      classes: 'bg-[#00CC66]/[0.15] border-[#00CC66]/30 text-[#00CC66]',
+      glow: '0 0 12px rgba(0, 204, 102, 0.15)',
+    },
+    'Under Review': {
+      classes: 'bg-[#FFAA00]/[0.08] border-[#FFAA00]/30 text-[#FFAA00]',
+      glow: '0 0 12px rgba(255, 170, 0, 0.12)',
+    },
+    Ongoing: {
+      classes: 'bg-[#0066FF]/[0.08] border-[#0066FF]/30 text-[#0066FF]',
+      glow: '0 0 12px rgba(0, 102, 255, 0.15)',
+    },
   }
+
+  const style = styles[status] || { classes: 'border-text-tertiary text-text-tertiary' }
 
   return (
     <span
       className={cn(
         'inline-block shrink-0 rounded-full border px-3 py-1 font-mono text-xs uppercase tracking-wider',
-        colors[status] || 'border-text-tertiary text-text-tertiary'
+        style.classes
       )}
+      style={style.glow ? { boxShadow: style.glow } : undefined}
     >
       {status}
     </span>
@@ -305,33 +330,36 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 // ============================================
-// Proof of Work Log (collapsible)
+// Work Log (collapsible, integrated into card bottom)
 // ============================================
 
-function ProofOfWorkLog({ deliverableId }: { deliverableId: string }) {
+function WorkLog({ deliverableId }: { deliverableId: string }) {
   const [expanded, setExpanded] = useState(false)
   const entries = PROOF_OF_WORK[deliverableId] || []
   const count = entries.length
 
   return (
-    <div className="mt-0">
-      {/* Divider line inside card */}
+    <div>
+      {/* Divider line */}
       <div
         className="h-px w-full"
         style={{
           background:
-            'linear-gradient(to right, var(--color-border-subtle), var(--color-border-default) 50%, var(--color-border-subtle))',
+            'linear-gradient(to right, transparent, var(--color-border-subtle) 15%, var(--color-border-subtle) 85%, transparent)',
         }}
       />
+
+      {/* Clickable row */}
       <button
         onClick={() => count > 0 && setExpanded(!expanded)}
         className={cn(
-          'group flex w-full items-center gap-3 px-6 py-4 transition-all duration-normal md:px-8',
+          'group flex w-full items-center gap-3 px-6 py-4 transition-all duration-300 md:px-8',
           count > 0
-            ? 'cursor-pointer hover:bg-[#1A1A1A]'
+            ? 'cursor-pointer hover:bg-[#161616]'
             : 'cursor-default',
-          expanded && 'bg-[#0D0D0D]'
+          expanded && 'bg-[#0E0E0E]'
         )}
+        style={{ transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)' }}
       >
         {count > 0 && (
           <motion.span
@@ -342,10 +370,10 @@ function ProofOfWorkLog({ deliverableId }: { deliverableId: string }) {
             <ChevronDown size={14} className="text-text-tertiary transition-colors group-hover:text-text-secondary" />
           </motion.span>
         )}
-        <span className="font-mono text-xs uppercase tracking-[0.15em] text-text-tertiary transition-colors group-hover:text-text-secondary">
+        <span className="font-mono text-xs tracking-[0.12em] text-text-tertiary transition-colors group-hover:text-text-secondary">
           Work Log
         </span>
-        <span className="ml-auto shrink-0 rounded-full bg-bg-elevated px-2.5 py-0.5 font-mono text-[10px] text-text-tertiary">
+        <span className="ml-auto shrink-0 rounded-full bg-[#1A1A1A] px-2.5 py-0.5 font-mono text-[10px] text-text-tertiary">
           {count} {count === 1 ? 'entry' : 'entries'}
         </span>
       </button>
@@ -368,23 +396,22 @@ function ProofOfWorkLog({ deliverableId }: { deliverableId: string }) {
                     i < entries.length - 1 ? 'pb-6' : 'pb-0'
                   )}
                 >
-                  {/* Timeline dot */}
-                  <div className="absolute -left-[4px] top-1.5 h-2 w-2 rounded-full border-[1.5px] border-accent-blue bg-bg-card" />
+                  <div className="absolute -left-[4px] top-1.5 h-2 w-2 rounded-full border-[1.5px] border-accent-blue bg-[#0D0D0D]" />
                   <span className="font-mono text-label uppercase tracking-wider text-text-tertiary">
                     {entry.date}
                   </span>
                   <h4 className="mt-1.5 text-body-sm font-medium text-text-primary">
                     {entry.title}
                   </h4>
-                  <p className="mt-1.5 text-body-sm text-text-secondary">
+                  <p className="mt-1.5 text-body-sm leading-relaxed text-text-secondary">
                     {entry.description}
                   </p>
                   {entry.tasks && entry.tasks.length > 0 && (
-                    <ul className="mt-3 space-y-1.5 pl-3">
+                    <ul className="mt-3 space-y-2 pl-3">
                       {entry.tasks.map((task, j) => (
                         <li
                           key={j}
-                          className="relative pl-3 text-xs leading-relaxed text-text-secondary/80 before:absolute before:left-0 before:top-[0.45em] before:h-[3px] before:w-[3px] before:rounded-full before:bg-text-tertiary/40"
+                          className="relative pl-4 text-xs leading-relaxed text-text-secondary/80 before:absolute before:left-0 before:top-[0.5em] before:h-[4px] before:w-[4px] before:rounded-full before:bg-text-tertiary/30"
                         >
                           {task}
                         </li>
@@ -425,27 +452,29 @@ function DeliverableCard({
         delay: index * 0.1,
         ease: easeOutExpo,
       }}
-      className="group/card relative overflow-hidden rounded-xl border border-border-subtle transition-all duration-500"
+      className="group/card relative overflow-hidden border border-border-default transition-all duration-500"
       style={{
-        background: 'linear-gradient(135deg, #111111 0%, #0D0D0D 100%)',
-        boxShadow: '0 0 0 0 rgba(255,255,255,0)',
+        borderRadius: '12px',
+        background: 'linear-gradient(180deg, #111111 0%, #0C0C0C 100%)',
+        boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
+        transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.borderColor = 'var(--color-border-hover)'
-        e.currentTarget.style.boxShadow = '0 0 40px rgba(255,255,255,0.03)'
-        e.currentTarget.style.background = 'linear-gradient(135deg, #151515 0%, #0F0F0F 100%)'
+        e.currentTarget.style.boxShadow = '0 4px 32px rgba(0,0,0,0.5), 0 0 40px rgba(255,255,255,0.02)'
+        e.currentTarget.style.background = 'linear-gradient(180deg, #141414 0%, #0E0E0E 100%)'
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.borderColor = 'var(--color-border-subtle)'
-        e.currentTarget.style.boxShadow = '0 0 0 0 rgba(255,255,255,0)'
-        e.currentTarget.style.background = 'linear-gradient(135deg, #111111 0%, #0D0D0D 100%)'
+        e.currentTarget.style.borderColor = 'var(--color-border-default)'
+        e.currentTarget.style.boxShadow = '0 4px 24px rgba(0,0,0,0.4)'
+        e.currentTarget.style.background = 'linear-gradient(180deg, #111111 0%, #0C0C0C 100%)'
       }}
     >
-      {/* Top edge glow */}
+      {/* Top edge highlight */}
       <div
         className="pointer-events-none absolute inset-x-0 top-0 h-px"
         style={{
-          background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.08) 30%, rgba(255,255,255,0.08) 70%, transparent)',
+          background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.06) 25%, rgba(255,255,255,0.06) 75%, transparent)',
         }}
       />
 
@@ -453,7 +482,7 @@ function DeliverableCard({
       <button
         onClick={() => hasContent && setExpanded(!expanded)}
         className={cn(
-          'flex w-full flex-col gap-3 p-6 text-left sm:flex-row sm:items-start sm:justify-between sm:gap-4 md:p-8',
+          'flex w-full flex-col gap-3 p-6 pb-0 text-left sm:flex-row sm:items-start sm:justify-between sm:gap-4 md:p-8 md:pb-0',
           hasContent && 'cursor-pointer'
         )}
       >
@@ -469,10 +498,10 @@ function DeliverableCard({
               </motion.span>
             )}
             <div>
-              <h3 className="font-display text-heading-md font-semibold text-text-primary md:text-heading-lg">
+              <h3 className="mb-2 font-display text-heading-md font-semibold text-text-primary md:text-heading-lg">
                 {deliverable.title}
               </h3>
-              <p className="mt-2 tracking-wide text-body-sm text-text-secondary md:text-body-md">
+              <p className="mb-6 tracking-wide text-body-sm text-text-secondary md:text-body-md">
                 {deliverable.description}
               </p>
             </div>
@@ -505,16 +534,20 @@ function DeliverableCard({
                   {deliverable.subItems.map((sub) => (
                     <div
                       key={sub.title}
-                      className="rounded-lg border-l-2 border-l-accent-blue/25 border-y border-r border-y-border-subtle/40 border-r-border-subtle/40 bg-[#0A0A0A] p-5 backdrop-blur-sm"
+                      className="rounded-lg border border-border-subtle/30 border-l-2 border-l-[#0066FF]/25 p-5 md:p-6"
+                      style={{
+                        borderRadius: '8px',
+                        background: '#0A0A0A',
+                      }}
                     >
                       <h4 className="text-body-md font-medium text-text-primary">
                         {sub.title}
                       </h4>
-                      <ul className="mt-4 space-y-3">
+                      <ul className="mt-4 flex flex-col gap-3">
                         {sub.details.map((detail, j) => (
                           <li
                             key={j}
-                            className="relative pl-4 text-body-sm leading-[1.7] text-text-secondary before:absolute before:left-0 before:top-[0.6em] before:h-1 before:w-1 before:rounded-full before:bg-text-tertiary/40"
+                            className="relative pl-5 text-body-sm leading-[1.75] text-text-secondary before:absolute before:left-0 before:top-[0.55em] before:h-[5px] before:w-[5px] before:rounded-full before:bg-text-tertiary/30"
                           >
                             {detail}
                           </li>
@@ -527,7 +560,7 @@ function DeliverableCard({
 
               {/* Flat details list (for other deliverables) */}
               {deliverable.details && (
-                <ul className="space-y-2.5">
+                <ul className="flex flex-col gap-3">
                   {deliverable.details.map((detail, j) => {
                     const isHighlight =
                       deliverable.id === 'campaign-strategy' &&
@@ -537,10 +570,10 @@ function DeliverableCard({
                       <li
                         key={j}
                         className={cn(
-                          'relative pl-4 text-body-sm leading-[1.7] before:absolute before:left-0 before:top-[0.6em] before:h-1 before:w-1 before:rounded-full',
+                          'relative pl-5 text-body-sm leading-[1.75] before:absolute before:left-0 before:top-[0.55em] before:h-[5px] before:w-[5px] before:rounded-full',
                           isHighlight
-                            ? 'text-text-primary font-medium before:bg-accent-blue'
-                            : 'text-text-secondary before:bg-text-tertiary/40'
+                            ? 'font-medium text-text-primary before:bg-accent-blue'
+                            : 'text-text-secondary before:bg-text-tertiary/30'
                         )}
                       >
                         {detail}
@@ -554,8 +587,8 @@ function DeliverableCard({
         )}
       </AnimatePresence>
 
-      {/* Proof of Work Log — integrated into card bottom */}
-      <ProofOfWorkLog deliverableId={deliverable.id} />
+      {/* Work Log — integrated into card bottom */}
+      <WorkLog deliverableId={deliverable.id} />
     </motion.div>
   )
 }
