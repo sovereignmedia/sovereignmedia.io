@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "env:push": "bash scripts/sync-env.sh production",
-    "deploy": "vercel --prod --yes"
+    "deploy:prod": "vercel --prod --yes"
   },
   "dependencies": {
     "clsx": "^2.1.0",

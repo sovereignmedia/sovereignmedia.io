@@ -358,7 +358,7 @@ pnpm lint                   # Lint check
 
 # Deployment
 pnpm env:push               # Sync .env.local → Vercel production
-pnpm deploy                 # Deploy to Vercel production
+pnpm deploy:prod                 # Deploy to Vercel production
 git push origin main        # Push code to GitHub
 ```
 
@@ -372,14 +372,14 @@ All passwords and secrets live in `.env.local`. To update passwords or add new e
 
 1. Edit `.env.local` (the ONLY file you touch)
 2. Run `pnpm env:push` (syncs to Vercel, handles cleanup automatically)
-3. Run `pnpm deploy` (deploys with the new values)
+3. Run `pnpm deploy:prod` (deploys with the new values)
 
 **NEVER use `vercel env add` directly.** The Vercel CLI stdin pipe injects trailing newlines into values, causing silent password mismatches. The `scripts/sync-env.sh` script handles this correctly with `printf '%s'`.
 
 **When Claude is asked to change a password or env var:**
 1. Edit the value in `.env.local`
 2. Run `pnpm env:push` to sync to Vercel
-3. Run `pnpm deploy` to deploy
+3. Run `pnpm deploy:prod` to deploy
 4. Verify the API returns `{"valid":true}` with a curl test
 
 **API routes use `.trim()` on all password comparisons as a safety net**, but the sync script is the primary defense.
