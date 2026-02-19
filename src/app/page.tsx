@@ -1,6 +1,7 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowRight, ChevronDown } from 'lucide-react'
 import { Navigation } from '@/components/layout/Navigation'
 import { Footer } from '@/components/layout/Footer'
@@ -12,7 +13,12 @@ import {
   GradientLine,
 } from '@/components/effects/GridBackground'
 
+// ============================================
 // Animation variants
+// ============================================
+
+const easeOutExpo = [0.16, 1, 0.3, 1] as const
+
 const stagger = {
   hidden: {},
   visible: {
@@ -27,9 +33,13 @@ const fadeUp = {
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] },
+    transition: { duration: 0.8, ease: easeOutExpo },
   },
 }
+
+// ============================================
+// Data
+// ============================================
 
 const SERVICES = [
   {
@@ -62,10 +72,85 @@ const SERVICES = [
   },
 ]
 
-export default function HomePage() {
+// ============================================
+// Splash Gateway
+// ============================================
+
+function SplashGateway({ onEnter }: { onEnter: () => void }) {
+  return (
+    <motion.div
+      className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-bg-primary"
+      exit={{
+        opacity: 0,
+        scale: 1.05,
+        transition: { duration: 0.8, ease: easeOutExpo },
+      }}
+    >
+      {/* Atmospheric glow */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            'radial-gradient(ellipse 50% 40% at 50% 50%, rgba(0, 102, 255, 0.04) 0%, transparent 70%)',
+        }}
+      />
+
+      {/* Slow-pulsing ambient orb */}
+      <motion.div
+        className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl"
+        style={{
+          width: 600,
+          height: 600,
+          background:
+            'radial-gradient(circle, rgba(0, 102, 255, 0.06) 0%, transparent 70%)',
+        }}
+        animate={{ opacity: [0.3, 0.6, 0.3], scale: [0.95, 1.05, 0.95] }}
+        transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
+      />
+
+      {/* Title */}
+      <motion.h1
+        className="relative z-10 font-display text-2xl font-semibold tracking-[0.3em] text-text-primary sm:text-3xl md:text-4xl"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 1.2, ease: easeOutExpo }}
+      >
+        SOVEREIGN MEDIA
+      </motion.h1>
+
+      {/* Enter button */}
+      <motion.button
+        className="relative z-10 mt-12 border border-border-subtle px-8 py-3 font-mono text-label uppercase tracking-[0.2em] text-text-tertiary transition-all duration-normal ease-out-expo hover:border-border-hover hover:text-text-secondary"
+        style={{ borderRadius: 'var(--radius-sm)' }}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 1, delay: 0.3, ease: easeOutExpo }}
+        onClick={onEnter}
+      >
+        Enter
+      </motion.button>
+    </motion.div>
+  )
+}
+
+// ============================================
+// Main Homepage Content
+// ============================================
+
+function HomeContent({ showNav }: { showNav: boolean }) {
   return (
     <>
-      <Navigation />
+      <AnimatePresence>
+        {showNav && (
+          <motion.div
+            initial={{ y: -20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.2, ease: easeOutExpo }}
+          >
+            <Navigation />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ============================================
           HERO SECTION
@@ -178,7 +263,7 @@ export default function HomePage() {
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 0.8, ease: easeOutExpo }}
             className="mb-16"
           >
             <span className="font-mono text-label uppercase tracking-[0.2em] text-text-tertiary">
@@ -201,7 +286,7 @@ export default function HomePage() {
                 transition={{
                   duration: 0.7,
                   delay: i * 0.1,
-                  ease: [0.16, 1, 0.3, 1],
+                  ease: easeOutExpo,
                 }}
                 className="card group"
               >
@@ -242,7 +327,7 @@ export default function HomePage() {
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-100px' }}
-              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 0.8, ease: easeOutExpo }}
             >
               <span className="font-mono text-label uppercase tracking-[0.2em] text-text-tertiary">
                 Approach
@@ -280,7 +365,7 @@ export default function HomePage() {
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 0.8, ease: easeOutExpo }}
             className="mx-auto max-w-2xl text-center"
           >
             <h2 className="font-display text-display-sm font-semibold text-text-primary md:text-display-md">
@@ -301,6 +386,43 @@ export default function HomePage() {
       </Section>
 
       <Footer />
+    </>
+  )
+}
+
+// ============================================
+// Root Page — Splash + Homepage
+// ============================================
+
+export default function HomePage() {
+  const [entered, setEntered] = useState(false)
+  const [navVisible, setNavVisible] = useState(false)
+
+  function handleEnter() {
+    setEntered(true)
+    // Show nav after splash exit animation completes
+    setTimeout(() => setNavVisible(true), 900)
+  }
+
+  return (
+    <>
+      {/* Main site content — always mounted, hidden behind splash */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={entered ? { opacity: 1 } : { opacity: 0 }}
+        transition={{
+          duration: 0.8,
+          delay: entered ? 0.4 : 0,
+          ease: easeOutExpo,
+        }}
+      >
+        <HomeContent showNav={navVisible} />
+      </motion.div>
+
+      {/* Splash overlay */}
+      <AnimatePresence>
+        {!entered && <SplashGateway onEnter={handleEnter} />}
+      </AnimatePresence>
     </>
   )
 }
