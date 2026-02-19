@@ -12,7 +12,7 @@ import {
   GlowOrb,
   GradientLine,
 } from '@/components/effects/GridBackground'
-import { AccessGranted } from '@/components/effects/AccessGranted'
+// AccessGranted overlay removed — inline confirmation used instead
 
 // ============================================
 // Animation config
@@ -75,7 +75,7 @@ const SERVICES = [
 // Stage type
 // ============================================
 
-type Stage = 'loading' | 'splash' | 'password' | 'granted' | 'main'
+type Stage = 'loading' | 'splash' | 'password' | 'main'
 
 // ============================================
 // Splash Stage
@@ -147,10 +147,10 @@ function PasswordStage({ onSuccess }: { onSuccess: () => void }) {
   const [password, setPassword] = useState('')
   const [error, setError] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [granted, setGranted] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    // Focus input after entrance animation
     const timer = setTimeout(() => inputRef.current?.focus(), 600)
     return () => clearTimeout(timer)
   }, [])
@@ -171,7 +171,9 @@ function PasswordStage({ onSuccess }: { onSuccess: () => void }) {
       const data = await res.json()
 
       if (data.valid) {
-        onSuccess()
+        setGranted(true)
+        // Let the "Access Granted" text appear, hold, then transition
+        setTimeout(onSuccess, 2000)
       } else {
         setError(true)
         setPassword('')
@@ -193,8 +195,7 @@ function PasswordStage({ onSuccess }: { onSuccess: () => void }) {
       animate={{ opacity: 1 }}
       exit={{
         opacity: 0,
-        scale: 1.05,
-        transition: { duration: 0.6, ease: easeOutExpo },
+        transition: { duration: 1.2, ease: easeOutExpo },
       }}
       transition={{ duration: 0.6, ease: easeOutExpo }}
     >
@@ -207,49 +208,115 @@ function PasswordStage({ onSuccess }: { onSuccess: () => void }) {
         }}
       />
 
-      <form onSubmit={handleSubmit} className="relative z-10 flex flex-col items-center">
-        {/* Input */}
-        <motion.input
-          ref={inputRef}
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Enter access code"
-          className="w-64 border-b bg-transparent pb-3 text-center font-mono text-body-md text-text-primary placeholder:text-text-tertiary focus:outline-none sm:w-80"
-          style={{
-            borderBottomColor: error
-              ? 'var(--color-error)'
-              : 'rgba(255, 255, 255, 0.3)',
-            transition: 'border-color 0.3s ease',
-          }}
-          initial={{ opacity: 0, y: 15 }}
-          animate={{
-            opacity: 1,
-            y: 0,
-            x: error ? [0, -8, 8, -6, 6, -3, 3, 0] : 0,
-          }}
-          transition={
-            error
-              ? { x: { duration: 0.5, ease: 'easeInOut' } }
-              : { duration: 0.8, ease: easeOutExpo }
-          }
-          autoComplete="off"
-          spellCheck={false}
-        />
+      {/* Green atmospheric glow — appears on grant */}
+      <AnimatePresence>
+        {granted && (
+          <motion.div
+            className="pointer-events-none absolute inset-0"
+            style={{
+              background:
+                'radial-gradient(ellipse 40% 30% at 50% 50%, rgba(0, 204, 102, 0.06) 0%, transparent 70%)',
+            }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1.5, ease: easeOutExpo }}
+          />
+        )}
+      </AnimatePresence>
 
-        {/* Submit button */}
-        <motion.button
-          type="submit"
-          disabled={submitting}
-          className="mt-10 border border-border-subtle px-8 py-3 font-mono text-label uppercase tracking-[0.2em] text-text-tertiary transition-all duration-normal ease-out-expo hover:border-border-hover hover:text-text-secondary disabled:opacity-50"
-          style={{ borderRadius: 'var(--radius-sm)' }}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.15, ease: easeOutExpo }}
-        >
-          Submit
-        </motion.button>
-      </form>
+      <div className="relative z-10 flex flex-col items-center">
+        <form onSubmit={handleSubmit} className="flex flex-col items-center">
+          {/* Input */}
+          <motion.input
+            ref={inputRef}
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Enter access code"
+            disabled={granted}
+            className="w-64 border-b bg-transparent pb-3 text-center font-mono text-body-md text-text-primary placeholder:text-text-tertiary focus:outline-none disabled:opacity-40 sm:w-80"
+            style={{
+              borderBottomColor: error
+                ? 'var(--color-error)'
+                : granted
+                  ? 'rgba(0, 204, 102, 0.4)'
+                  : 'rgba(255, 255, 255, 0.3)',
+              transition: 'border-color 0.6s ease, opacity 0.6s ease',
+            }}
+            initial={{ opacity: 0, y: 15 }}
+            animate={{
+              opacity: granted ? 0.4 : 1,
+              y: 0,
+              x: error ? [0, -8, 8, -6, 6, -3, 3, 0] : 0,
+            }}
+            transition={
+              error
+                ? { x: { duration: 0.5, ease: 'easeInOut' } }
+                : { duration: 0.8, ease: easeOutExpo }
+            }
+            autoComplete="off"
+            spellCheck={false}
+          />
+
+          {/* Submit button — hides on grant */}
+          <AnimatePresence>
+            {!granted && (
+              <motion.button
+                type="submit"
+                disabled={submitting}
+                className="mt-10 border border-border-subtle px-8 py-3 font-mono text-label uppercase tracking-[0.2em] text-text-tertiary transition-all duration-normal ease-out-expo hover:border-border-hover hover:text-text-secondary disabled:opacity-50"
+                style={{ borderRadius: 'var(--radius-sm)' }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -5, transition: { duration: 0.4, ease: easeOutExpo } }}
+                transition={{ duration: 0.8, delay: 0.15, ease: easeOutExpo }}
+              >
+                Submit
+              </motion.button>
+            )}
+          </AnimatePresence>
+        </form>
+
+        {/* Access Granted — appears inline below input */}
+        <AnimatePresence>
+          {granted && (
+            <motion.div
+              className="mt-8 flex flex-col items-center gap-3"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1, delay: 0.3, ease: easeOutExpo }}
+            >
+              {/* Green dot */}
+              <motion.div
+                className="h-1.5 w-1.5 rounded-full"
+                style={{
+                  backgroundColor: 'var(--color-success)',
+                  boxShadow:
+                    '0 0 8px rgba(0, 204, 102, 0.5), 0 0 24px rgba(0, 204, 102, 0.2)',
+                }}
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.6, delay: 0.4, ease: easeOutExpo }}
+              />
+
+              {/* Text */}
+              <motion.span
+                className="font-mono text-xs uppercase tracking-[0.3em]"
+                style={{
+                  color: 'var(--color-success)',
+                  textShadow:
+                    '0 0 20px rgba(0, 204, 102, 0.3), 0 0 40px rgba(0, 204, 102, 0.1)',
+                }}
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.5, ease: easeOutExpo }}
+              >
+                Access Granted
+              </motion.span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
 
       {/* Dev bypass — remove when pages are finalized */}
       <button
@@ -522,10 +589,6 @@ export default function HomePage() {
   }
 
   function handlePasswordSuccess() {
-    setStage('granted')
-  }
-
-  function handleGrantedComplete() {
     setStage('main')
     setTimeout(() => setNavVisible(true), 700)
   }
@@ -561,9 +624,6 @@ export default function HomePage() {
         )}
         {stage === 'password' && (
           <PasswordStage onSuccess={handlePasswordSuccess} />
-        )}
-        {stage === 'granted' && (
-          <AccessGranted onComplete={handleGrantedComplete} />
         )}
       </AnimatePresence>
     </>
