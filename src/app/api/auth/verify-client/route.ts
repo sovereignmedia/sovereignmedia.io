@@ -9,13 +9,13 @@ export async function POST(request: Request) {
   }
 
   const envKey = `${clientId.toUpperCase()}_PASSWORD`
-  const clientPassword = process.env[envKey]
+  const clientPassword = process.env[envKey]?.trim()
 
   if (!clientPassword) {
     return NextResponse.json({ valid: false }, { status: 500 })
   }
 
-  const valid = password === clientPassword
+  const valid = password.trim() === clientPassword
 
   if (valid) {
     const cookieStore = await cookies()

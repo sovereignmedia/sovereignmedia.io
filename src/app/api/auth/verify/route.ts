@@ -8,12 +8,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ valid: false }, { status: 400 })
   }
 
-  const sitePassword = process.env.SITE_PASSWORD
+  const sitePassword = process.env.SITE_PASSWORD?.trim()
   if (!sitePassword) {
     return NextResponse.json({ valid: false }, { status: 500 })
   }
 
-  const valid = password === sitePassword
+  const valid = password.trim() === sitePassword
 
   if (valid) {
     const cookieStore = await cookies()
