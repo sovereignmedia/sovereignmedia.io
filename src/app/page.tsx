@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowRight, ChevronDown } from 'lucide-react'
 import { Navigation } from '@/components/layout/Navigation'
@@ -14,7 +14,7 @@ import {
 } from '@/components/effects/GridBackground'
 
 // ============================================
-// Animation variants
+// Animation config
 // ============================================
 
 const easeOutExpo = [0.16, 1, 0.3, 1] as const
@@ -22,9 +22,7 @@ const easeOutExpo = [0.16, 1, 0.3, 1] as const
 const stagger = {
   hidden: {},
   visible: {
-    transition: {
-      staggerChildren: 0.12,
-    },
+    transition: { staggerChildren: 0.12 },
   },
 }
 
@@ -73,17 +71,24 @@ const SERVICES = [
 ]
 
 // ============================================
-// Splash Gateway
+// Stage type
 // ============================================
 
-function SplashGateway({ onEnter }: { onEnter: () => void }) {
+type Stage = 'loading' | 'splash' | 'password' | 'main'
+
+// ============================================
+// Splash Stage
+// ============================================
+
+function SplashStage({ onEnter }: { onEnter: () => void }) {
   return (
     <motion.div
+      key="splash"
       className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-bg-primary"
       exit={{
         opacity: 0,
         scale: 1.05,
-        transition: { duration: 0.8, ease: easeOutExpo },
+        transition: { duration: 0.6, ease: easeOutExpo },
       }}
     >
       {/* Atmospheric glow */}
@@ -134,6 +139,121 @@ function SplashGateway({ onEnter }: { onEnter: () => void }) {
 }
 
 // ============================================
+// Password Stage
+// ============================================
+
+function PasswordStage({ onSuccess }: { onSuccess: () => void }) {
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    // Focus input after entrance animation
+    const timer = setTimeout(() => inputRef.current?.focus(), 600)
+    return () => clearTimeout(timer)
+  }, [])
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (submitting || !password.trim()) return
+
+    setSubmitting(true)
+    setError(false)
+
+    try {
+      const res = await fetch('/api/auth/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: password.trim() }),
+      })
+      const data = await res.json()
+
+      if (data.valid) {
+        onSuccess()
+      } else {
+        setError(true)
+        setPassword('')
+        setTimeout(() => setError(false), 1000)
+      }
+    } catch {
+      setError(true)
+      setTimeout(() => setError(false), 1000)
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  return (
+    <motion.div
+      key="password"
+      className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-bg-primary"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{
+        opacity: 0,
+        scale: 1.05,
+        transition: { duration: 0.6, ease: easeOutExpo },
+      }}
+      transition={{ duration: 0.6, ease: easeOutExpo }}
+    >
+      {/* Atmospheric glow */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            'radial-gradient(ellipse 50% 40% at 50% 50%, rgba(0, 102, 255, 0.04) 0%, transparent 70%)',
+        }}
+      />
+
+      <form onSubmit={handleSubmit} className="relative z-10 flex flex-col items-center">
+        {/* Input */}
+        <motion.input
+          ref={inputRef}
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Enter access code"
+          className="w-64 border-b bg-transparent pb-3 text-center font-mono text-body-md text-text-primary placeholder:text-text-tertiary focus:outline-none sm:w-80"
+          style={{
+            borderBottomColor: error
+              ? 'var(--color-error)'
+              : 'rgba(255, 255, 255, 0.3)',
+            transition: 'border-color 0.3s ease',
+          }}
+          initial={{ opacity: 0, y: 15 }}
+          animate={{
+            opacity: 1,
+            y: 0,
+            x: error ? [0, -8, 8, -6, 6, -3, 3, 0] : 0,
+          }}
+          transition={
+            error
+              ? { x: { duration: 0.5, ease: 'easeInOut' } }
+              : { duration: 0.8, ease: easeOutExpo }
+          }
+          autoComplete="off"
+          spellCheck={false}
+        />
+
+        {/* Submit button */}
+        <motion.button
+          type="submit"
+          disabled={submitting}
+          className="mt-10 border border-border-subtle px-8 py-3 font-mono text-label uppercase tracking-[0.2em] text-text-tertiary transition-all duration-normal ease-out-expo hover:border-border-hover hover:text-text-secondary disabled:opacity-50"
+          style={{ borderRadius: 'var(--radius-sm)' }}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.15, ease: easeOutExpo }}
+        >
+          Submit
+        </motion.button>
+      </form>
+    </motion.div>
+  )
+}
+
+// ============================================
 // Main Homepage Content
 // ============================================
 
@@ -152,24 +272,11 @@ function HomeContent({ showNav }: { showNav: boolean }) {
         )}
       </AnimatePresence>
 
-      {/* ============================================
-          HERO SECTION
-          ============================================ */}
+      {/* HERO SECTION */}
       <section className="relative flex min-h-screen items-center justify-center overflow-hidden">
-        {/* Background Effects */}
         <GridBackground variant="spotlight" />
-        <GlowOrb
-          className="-top-32 left-1/4"
-          color="blue"
-          size={600}
-          delay={0}
-        />
-        <GlowOrb
-          className="-bottom-48 right-1/4"
-          color="white"
-          size={500}
-          delay={2}
-        />
+        <GlowOrb className="-top-32 left-1/4" color="blue" size={600} delay={0} />
+        <GlowOrb className="-bottom-48 right-1/4" color="white" size={500} delay={2} />
 
         <Container className="relative z-10 py-32">
           <motion.div
@@ -178,14 +285,12 @@ function HomeContent({ showNav }: { showNav: boolean }) {
             animate="visible"
             className="mx-auto max-w-4xl text-center"
           >
-            {/* Eyebrow */}
             <motion.div variants={fadeUp}>
               <span className="inline-block font-mono text-label uppercase tracking-[0.2em] text-text-tertiary">
                 Strategic Marketing Architecture
               </span>
             </motion.div>
 
-            {/* Headline */}
             <motion.h1
               variants={fadeUp}
               className="mt-6 font-display text-display-lg font-semibold leading-[1.05] tracking-tight text-text-primary md:text-display-xl"
@@ -195,7 +300,6 @@ function HomeContent({ showNav }: { showNav: boolean }) {
               <span className="text-text-secondary">outcomes.</span>
             </motion.h1>
 
-            {/* Subheadline */}
             <motion.p
               variants={fadeUp}
               className="mx-auto mt-8 max-w-2xl text-body-lg text-text-secondary"
@@ -205,7 +309,6 @@ function HomeContent({ showNav }: { showNav: boolean }) {
               engineered for capital efficiency.
             </motion.p>
 
-            {/* CTAs */}
             <motion.div
               variants={fadeUp}
               className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row"
@@ -219,7 +322,6 @@ function HomeContent({ showNav }: { showNav: boolean }) {
               </Button>
             </motion.div>
 
-            {/* Proof Bar */}
             <motion.div
               variants={fadeUp}
               className="mt-20 flex flex-wrap items-center justify-center gap-x-12 gap-y-6"
@@ -242,7 +344,6 @@ function HomeContent({ showNav }: { showNav: boolean }) {
           </motion.div>
         </Container>
 
-        {/* Scroll Indicator */}
         <motion.div
           className="absolute bottom-8 left-1/2 -translate-x-1/2"
           animate={{ y: [0, 8, 0] }}
@@ -254,9 +355,7 @@ function HomeContent({ showNav }: { showNav: boolean }) {
 
       <GradientLine />
 
-      {/* ============================================
-          SERVICES SECTION
-          ============================================ */}
+      {/* SERVICES SECTION */}
       <Section id="services">
         <Container>
           <motion.div
@@ -316,9 +415,7 @@ function HomeContent({ showNav }: { showNav: boolean }) {
 
       <GradientLine />
 
-      {/* ============================================
-          APPROACH SECTION
-          ============================================ */}
+      {/* APPROACH SECTION */}
       <Section id="about" className="relative overflow-hidden">
         <GridBackground variant="radial" />
         <Container className="relative z-10">
@@ -355,9 +452,7 @@ function HomeContent({ showNav }: { showNav: boolean }) {
 
       <GradientLine />
 
-      {/* ============================================
-          CTA SECTION
-          ============================================ */}
+      {/* CTA SECTION */}
       <Section id="contact" className="relative overflow-hidden">
         <GlowOrb className="left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" color="blue" size={500} />
         <Container className="relative z-10">
@@ -391,37 +486,65 @@ function HomeContent({ showNav }: { showNav: boolean }) {
 }
 
 // ============================================
-// Root Page — Splash + Homepage
+// Root Page — 3-Stage Flow
 // ============================================
 
 export default function HomePage() {
-  const [entered, setEntered] = useState(false)
+  const [stage, setStage] = useState<Stage>('loading')
   const [navVisible, setNavVisible] = useState(false)
 
+  // Check cookie on mount
+  useEffect(() => {
+    fetch('/api/auth/check')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.authenticated) {
+          setStage('main')
+          setNavVisible(true)
+        } else {
+          setStage('splash')
+        }
+      })
+      .catch(() => setStage('splash'))
+  }, [])
+
   function handleEnter() {
-    setEntered(true)
-    // Show nav after splash exit animation completes
-    setTimeout(() => setNavVisible(true), 900)
+    setStage('password')
+  }
+
+  function handlePasswordSuccess() {
+    setStage('main')
+    setTimeout(() => setNavVisible(true), 700)
+  }
+
+  // Show nothing during loading to prevent flash
+  if (stage === 'loading') {
+    return <div className="min-h-screen bg-bg-primary" />
   }
 
   return (
     <>
-      {/* Main site content — always mounted, hidden behind splash */}
+      {/* Main site content */}
       <motion.div
         initial={{ opacity: 0 }}
-        animate={entered ? { opacity: 1 } : { opacity: 0 }}
+        animate={stage === 'main' ? { opacity: 1 } : { opacity: 0 }}
         transition={{
           duration: 0.8,
-          delay: entered ? 0.4 : 0,
+          delay: stage === 'main' ? 0.4 : 0,
           ease: easeOutExpo,
         }}
       >
         <HomeContent showNav={navVisible} />
       </motion.div>
 
-      {/* Splash overlay */}
-      <AnimatePresence>
-        {!entered && <SplashGateway onEnter={handleEnter} />}
+      {/* Overlay stages */}
+      <AnimatePresence mode="wait">
+        {stage === 'splash' && (
+          <SplashStage onEnter={handleEnter} />
+        )}
+        {stage === 'password' && (
+          <PasswordStage onSuccess={handlePasswordSuccess} />
+        )}
       </AnimatePresence>
     </>
   )
