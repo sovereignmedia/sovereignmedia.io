@@ -26,7 +26,7 @@ function PageSection({
   className?: string
 }) {
   return (
-    <section id={id} className={cn('py-20 md:py-28', className)}>
+    <section id={id} className={cn('py-12 md:py-16', className)}>
       <div className="mx-auto w-full max-w-5xl px-6 md:px-8">{children}</div>
     </section>
   )
@@ -135,7 +135,7 @@ export function ClientPortal({ config, extraSections, hideSections = [] }: Clien
       <PortalHeader confidential={config.client.confidential} />
 
       {/* HERO */}
-      <PageSection className="relative z-10 pb-12 pt-20 md:pb-16 md:pt-28">
+      <PageSection className="relative z-10 pb-8 pt-16 md:pb-12 md:pt-20">
         <PortalHero
           clientName={config.client.name}
           title={config.hero.title}
@@ -163,7 +163,7 @@ export function ClientPortal({ config, extraSections, hideSections = [] }: Clien
       {show('deliverables') && (
         <>
           <PageSection className="relative z-10">
-            <SectionHeader label="Deliverables" title="Scope of Work" />
+            <SectionHeader label="Deliverables" title="Projects" />
             <div className="mt-10 space-y-6">
               {config.deliverables.map((deliverable, i) => (
                 <PortalCard
