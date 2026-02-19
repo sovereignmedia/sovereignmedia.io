@@ -590,7 +590,7 @@ export default function FrontierasWorkPage() {
 
   // Check cookie on mount
   useEffect(() => {
-    fetch('/api/auth/check-client?clientId=frontieras')
+    fetch('/api/auth/check-client?clientId=frontieras', { cache: 'no-store' })
       .then((res) => res.json())
       .then((data) => setAuthenticated(data.authenticated))
       .catch(() => setAuthenticated(false))

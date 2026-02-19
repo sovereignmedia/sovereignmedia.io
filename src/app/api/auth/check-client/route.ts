@@ -11,5 +11,8 @@ export async function GET(request: Request) {
 
   const cookieStore = await cookies()
   const hasAccess = cookieStore.get(`${clientId}_access`)?.value === 'true'
-  return NextResponse.json({ authenticated: hasAccess })
+  return NextResponse.json(
+    { authenticated: hasAccess },
+    { headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate', 'Pragma': 'no-cache' } }
+  )
 }

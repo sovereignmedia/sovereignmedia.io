@@ -503,7 +503,7 @@ export default function HomePage() {
 
   // Check cookie on mount
   useEffect(() => {
-    fetch('/api/auth/check')
+    fetch('/api/auth/check', { cache: 'no-store' })
       .then((res) => res.json())
       .then((data) => {
         if (data.authenticated) {
