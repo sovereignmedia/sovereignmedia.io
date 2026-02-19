@@ -70,14 +70,6 @@ export function ProgressBar({ progress, label, index }: ProgressBarProps) {
         )}
       </div>
 
-      {/* Divider below progress bar */}
-      <div
-        className="mt-6 h-px w-full"
-        style={{
-          background:
-            'linear-gradient(to right, transparent, var(--color-border-subtle) 20%, var(--color-border-subtle) 80%, transparent)',
-        }}
-      />
     </div>
   )
 }

@@ -37,7 +37,7 @@ export function WorkLog({ entries }: WorkLogProps) {
         className="h-px w-full"
         style={{
           background:
-            'linear-gradient(to right, transparent, var(--color-border-subtle) 15%, var(--color-border-subtle) 85%, transparent)',
+            'linear-gradient(to right, transparent, var(--color-border-default) 15%, var(--color-border-default) 85%, transparent)',
         }}
       />
 
@@ -62,10 +62,10 @@ export function WorkLog({ entries }: WorkLogProps) {
             <ChevronDown size={14} className="text-text-tertiary transition-colors group-hover:text-text-secondary" />
           </motion.span>
         )}
-        <span className="font-mono text-xs tracking-[0.12em] text-text-tertiary transition-colors group-hover:text-text-secondary">
+        <span className="font-mono text-xs tracking-[0.12em] text-text-secondary transition-colors group-hover:text-text-primary">
           Work Log
         </span>
-        <span className="ml-auto shrink-0 rounded-full bg-border-subtle px-2.5 py-0.5 font-mono text-[10px] text-text-tertiary">
+        <span className="ml-auto shrink-0 rounded-full bg-border-default px-2.5 py-0.5 font-mono text-[10px] text-text-secondary">
           {count} {count === 1 ? 'entry' : 'entries'}
         </span>
       </button>

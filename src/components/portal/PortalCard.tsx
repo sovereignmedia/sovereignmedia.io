@@ -92,7 +92,7 @@ export function PortalCard({ deliverable, index, workLogEntries = [] }: PortalCa
             className="h-px w-full"
             style={{
               background:
-                'linear-gradient(to right, transparent, var(--color-border-subtle) 15%, var(--color-border-subtle) 85%, transparent)',
+                'linear-gradient(to right, transparent, var(--color-border-default) 15%, var(--color-border-default) 85%, transparent)',
             }}
           />
 
@@ -113,10 +113,10 @@ export function PortalCard({ deliverable, index, workLogEntries = [] }: PortalCa
             >
               <ChevronDown size={14} className="text-text-tertiary transition-colors group-hover:text-text-secondary" />
             </motion.span>
-            <span className="font-mono text-xs tracking-[0.12em] text-text-tertiary transition-colors group-hover:text-text-secondary">
+            <span className="font-mono text-xs tracking-[0.12em] text-text-secondary transition-colors group-hover:text-text-primary">
               Deliverables & Outcomes
             </span>
-            <span className="ml-auto shrink-0 rounded-full bg-border-subtle px-2.5 py-0.5 font-mono text-[10px] text-text-tertiary">
+            <span className="ml-auto shrink-0 rounded-full bg-border-default px-2.5 py-0.5 font-mono text-[10px] text-text-secondary">
               {itemCount} {itemCount === 1 ? 'item' : 'items'}
             </span>
           </button>
@@ -200,7 +200,7 @@ export function PortalCard({ deliverable, index, workLogEntries = [] }: PortalCa
             className="h-px w-full"
             style={{
               background:
-                'linear-gradient(to right, transparent, var(--color-border-subtle) 15%, var(--color-border-subtle) 85%, transparent)',
+                'linear-gradient(to right, transparent, var(--color-border-default) 15%, var(--color-border-default) 85%, transparent)',
             }}
           />
           <div className="px-6 py-5 md:px-8">
