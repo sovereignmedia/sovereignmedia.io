@@ -469,7 +469,7 @@ function ProgressBar({
       </div>
 
       {/* Track */}
-      <div className="relative h-1 w-full overflow-hidden rounded-full bg-[#1A1A1A]">
+      <div className="relative h-1 w-full overflow-hidden rounded-full bg-[#1A2326]">
         {progress > 0 && (
           <motion.div
             className="absolute inset-y-0 left-0 rounded-full"
@@ -581,9 +581,9 @@ function WorkLog({ deliverableId }: { deliverableId: string }) {
         className={cn(
           'group flex w-full items-center gap-3 px-6 py-4 transition-all duration-300 md:px-8',
           count > 0
-            ? 'cursor-pointer hover:bg-[#161616]'
+            ? 'cursor-pointer hover:bg-[#182023]'
             : 'cursor-default',
-          expanded && 'bg-[#0E0E0E]'
+          expanded && 'bg-[#0D1619]'
         )}
         style={{ transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)' }}
       >
@@ -599,7 +599,7 @@ function WorkLog({ deliverableId }: { deliverableId: string }) {
         <span className="font-mono text-xs tracking-[0.12em] text-text-tertiary transition-colors group-hover:text-text-secondary">
           Work Log
         </span>
-        <span className="ml-auto shrink-0 rounded-full bg-[#1A1A1A] px-2.5 py-0.5 font-mono text-[10px] text-text-tertiary">
+        <span className="ml-auto shrink-0 rounded-full bg-[#1A2326] px-2.5 py-0.5 font-mono text-[10px] text-text-tertiary">
           {count} {count === 1 ? 'entry' : 'entries'}
         </span>
       </button>
@@ -622,7 +622,7 @@ function WorkLog({ deliverableId }: { deliverableId: string }) {
                     i < entries.length - 1 ? 'pb-6' : 'pb-0'
                   )}
                 >
-                  <div className="absolute -left-[4px] top-1.5 h-2 w-2 rounded-full border-[1.5px] border-accent-blue bg-[#0D0D0D]" />
+                  <div className="absolute -left-[4px] top-1.5 h-2 w-2 rounded-full border-[1.5px] border-accent-blue bg-[#0C1518]" />
                   <span className="font-mono text-label uppercase tracking-wider text-text-tertiary">
                     {entry.date}
                   </span>
@@ -681,19 +681,19 @@ function DeliverableCard({
       className="group/card relative overflow-hidden border border-border-default transition-all duration-500"
       style={{
         borderRadius: '12px',
-        background: 'linear-gradient(180deg, #111111 0%, #0C0C0C 100%)',
+        background: 'linear-gradient(180deg, #141C1F 0%, #0F171A 100%)',
         boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
         transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.borderColor = 'var(--color-border-hover)'
         e.currentTarget.style.boxShadow = '0 4px 32px rgba(0,0,0,0.5), 0 0 40px rgba(255,255,255,0.02)'
-        e.currentTarget.style.background = 'linear-gradient(180deg, #141414 0%, #0E0E0E 100%)'
+        e.currentTarget.style.background = 'linear-gradient(180deg, #182023 0%, #121A1D 100%)'
       }}
       onMouseLeave={(e) => {
         e.currentTarget.style.borderColor = 'var(--color-border-default)'
         e.currentTarget.style.boxShadow = '0 4px 24px rgba(0,0,0,0.4)'
-        e.currentTarget.style.background = 'linear-gradient(180deg, #111111 0%, #0C0C0C 100%)'
+        e.currentTarget.style.background = 'linear-gradient(180deg, #141C1F 0%, #0F171A 100%)'
       }}
     >
       {/* Top edge highlight */}
@@ -763,7 +763,7 @@ function DeliverableCard({
                       className="rounded-lg border border-border-subtle/30 border-l-2 border-l-[#0066FF]/25 p-5 md:p-6"
                       style={{
                         borderRadius: '8px',
-                        background: '#0A0A0A',
+                        background: '#0F171A',
                       }}
                     >
                       <h4 className="text-body-md font-medium text-text-primary">
@@ -1144,17 +1144,17 @@ function PortalContent() {
           transition={{ duration: 0.7, delay: 0.1, ease: easeOutExpo }}
           className="group/pricing relative mt-10 overflow-hidden rounded-xl border border-border-subtle transition-all duration-500"
           style={{
-            background: 'linear-gradient(135deg, #111111 0%, #0D0D0D 100%)',
+            background: 'linear-gradient(135deg, #141C1F 0%, #0F171A 100%)',
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.borderColor = 'var(--color-border-hover)'
             e.currentTarget.style.boxShadow = '0 0 40px rgba(255,255,255,0.03)'
-            e.currentTarget.style.background = 'linear-gradient(135deg, #151515 0%, #0F0F0F 100%)'
+            e.currentTarget.style.background = 'linear-gradient(135deg, #182023 0%, #121A1D 100%)'
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.borderColor = 'var(--color-border-subtle)'
             e.currentTarget.style.boxShadow = '0 0 0 0 rgba(255,255,255,0)'
-            e.currentTarget.style.background = 'linear-gradient(135deg, #111111 0%, #0D0D0D 100%)'
+            e.currentTarget.style.background = 'linear-gradient(135deg, #141C1F 0%, #0F171A 100%)'
           }}
         >
           {/* Top edge glow */}
@@ -1295,7 +1295,7 @@ function PortalContent() {
               }}
               className="relative overflow-hidden rounded-xl border border-border-subtle p-5 text-center transition-all duration-500 hover:border-border-hover"
               style={{
-                background: 'linear-gradient(135deg, #111111 0%, #0D0D0D 100%)',
+                background: 'linear-gradient(135deg, #141C1F 0%, #0F171A 100%)',
               }}
             >
               {/* Top edge glow */}

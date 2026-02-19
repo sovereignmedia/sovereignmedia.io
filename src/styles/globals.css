@@ -7,12 +7,12 @@
    ============================================ */
 
 :root {
-  /* Background Scale — Black to Dark Gray */
-  --color-bg-primary: #000000;
-  --color-bg-elevated: #0A0A0A;
-  --color-bg-card: #111111;
-  --color-bg-card-hover: #1A1A1A;
-  --color-bg-overlay: rgba(0, 0, 0, 0.85);
+  /* Background Scale — Obsidian to Dark Gray */
+  --color-bg-primary: #0B1215;
+  --color-bg-elevated: #0F171A;
+  --color-bg-card: #141C1F;
+  --color-bg-card-hover: #1A2326;
+  --color-bg-overlay: rgba(11, 18, 21, 0.9);
 
   /* Text Scale — White to Mid Gray */
   --color-text-primary: #FFFFFF;
@@ -20,9 +20,9 @@
   --color-text-tertiary: #666666;
 
   /* Border Scale */
-  --color-border-subtle: #1A1A1A;
-  --color-border-default: #2A2A2A;
-  --color-border-hover: #3A3A3A;
+  --color-border-subtle: #1A2326;
+  --color-border-default: #2A3336;
+  --color-border-hover: #3A4346;
 
   /* Accent Colors */
   --color-accent-primary: #FFFFFF;

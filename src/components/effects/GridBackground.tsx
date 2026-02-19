@@ -29,7 +29,7 @@ export function GridBackground({ className, variant = 'default' }: GridBackgroun
           className="absolute inset-0"
           style={{
             background:
-              'radial-gradient(ellipse 50% 50% at 50% 50%, transparent 0%, #000000 70%)',
+              'radial-gradient(ellipse 50% 50% at 50% 50%, transparent 0%, #0B1215 70%)',
           }}
         />
       )}
