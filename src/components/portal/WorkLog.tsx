@@ -49,14 +49,14 @@ function DateGroup({ group, defaultOpen }: { group: { date: string; entries: Pro
             transition={{ duration: 0.35, ease: easeOutExpo }}
             className="overflow-hidden"
           >
-            <div className="pt-2 pb-2">
+            <div className="pl-1 pt-2 pb-2">
               {group.entries.map((entry, ei) => {
                 const isLast = ei === group.entries.length - 1
                 return (
                   <div
                     key={entry.date + entry.title}
                     className={cn(
-                      'relative pl-6',
+                      'relative ml-1 pl-6',
                       !isLast ? 'pb-6' : 'pb-0'
                     )}
                     style={{
@@ -64,7 +64,7 @@ function DateGroup({ group, defaultOpen }: { group: { date: string; entries: Pro
                     }}
                   >
                     <div
-                      className="absolute -left-[4px] top-1.5 h-2 w-2 rounded-full border-[1.5px] border-accent-blue bg-bg-primary"
+                      className="absolute -left-[4.5px] top-1.5 h-[9px] w-[9px] rounded-full border-[1.5px] border-accent-blue bg-bg-primary"
                       style={{ boxShadow: '0 0 6px rgba(0, 102, 255, 0.3)' }}
                     />
                     <h4 className="text-body-sm font-medium text-text-primary">
