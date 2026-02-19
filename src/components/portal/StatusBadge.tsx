@@ -4,29 +4,47 @@ import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import type { DeliverableStatus } from '@/types/portal'
 
-const STATUS_STYLES: Record<string, { classes: string; glow?: string; glowPulse?: string }> = {
+interface StatusConfig {
+  bg: string
+  text: string
+  border: string
+  borderPulse: string
+  glow: string
+  glowPulse: string
+}
+
+const ACTIVE_STYLES: Record<string, StatusConfig> = {
   'In Development': {
-    classes: 'bg-success/[0.08] border-success/30 text-success',
+    bg: 'rgba(0, 204, 102, 0.08)',
+    text: 'var(--color-success)',
+    border: 'rgba(0, 204, 102, 0.3)',
+    borderPulse: 'rgba(0, 204, 102, 0.55)',
     glow: '0 0 12px rgba(0, 204, 102, 0.15)',
-    glowPulse: '0 0 20px rgba(0, 204, 102, 0.35)',
-  },
-  Planned: {
-    classes: 'bg-transparent border-border-default text-text-tertiary',
+    glowPulse: '0 0 20px rgba(0, 204, 102, 0.4)',
   },
   Completed: {
-    classes: 'bg-success/[0.15] border-success/30 text-success',
+    bg: 'rgba(0, 204, 102, 0.12)',
+    text: 'var(--color-success)',
+    border: 'rgba(0, 204, 102, 0.3)',
+    borderPulse: 'rgba(0, 204, 102, 0.55)',
     glow: '0 0 12px rgba(0, 204, 102, 0.15)',
-    glowPulse: '0 0 20px rgba(0, 204, 102, 0.35)',
+    glowPulse: '0 0 20px rgba(0, 204, 102, 0.4)',
   },
   'Under Review': {
-    classes: 'bg-warning/[0.08] border-warning/30 text-warning',
+    bg: 'rgba(255, 170, 0, 0.08)',
+    text: 'var(--color-warning)',
+    border: 'rgba(255, 170, 0, 0.3)',
+    borderPulse: 'rgba(255, 170, 0, 0.5)',
     glow: '0 0 12px rgba(255, 170, 0, 0.12)',
     glowPulse: '0 0 20px rgba(255, 170, 0, 0.3)',
   },
   Ongoing: {
-    classes: 'bg-accent-blue/[0.08] border-accent-blue/30 text-accent-blue',
+    bg: 'rgba(0, 102, 255, 0.08)',
+    text: 'var(--color-accent-blue)',
+    border: 'rgba(0, 102, 255, 0.3)',
+    borderPulse: 'rgba(0, 102, 255, 0.55)',
     glow: '0 0 12px rgba(0, 102, 255, 0.15)',
-    glowPulse: '0 0 20px rgba(0, 102, 255, 0.35)',
+    glowPulse: '0 0 20px rgba(0, 102, 255, 0.4)',
   },
 }
 
@@ -35,21 +53,21 @@ interface StatusBadgeProps {
 }
 
 export function StatusBadge({ status }: StatusBadgeProps) {
-  const style = STATUS_STYLES[status] || {
-    classes: 'border-text-tertiary text-text-tertiary',
-  }
+  const config = ACTIVE_STYLES[status]
 
-  const isActive = !!style.glowPulse
-
-  if (isActive) {
+  if (config) {
     return (
       <motion.span
-        className={cn(
-          'inline-block shrink-0 rounded-full border px-3 py-1 font-mono text-xs uppercase tracking-wider',
-          style.classes
-        )}
+        className="inline-block shrink-0 rounded-full px-3 py-1 font-mono text-xs uppercase tracking-wider"
+        style={{
+          backgroundColor: config.bg,
+          color: config.text,
+          borderWidth: '1px',
+          borderStyle: 'solid',
+        }}
         animate={{
-          boxShadow: [style.glow!, style.glowPulse!, style.glow!],
+          borderColor: [config.border, config.borderPulse, config.border],
+          boxShadow: [config.glow, config.glowPulse, config.glow],
         }}
         transition={{
           duration: 3,
@@ -62,11 +80,14 @@ export function StatusBadge({ status }: StatusBadgeProps) {
     )
   }
 
+  // Static fallback for Planned / unknown statuses
   return (
     <span
       className={cn(
         'inline-block shrink-0 rounded-full border px-3 py-1 font-mono text-xs uppercase tracking-wider',
-        style.classes
+        status === 'Planned'
+          ? 'border-border-default bg-transparent text-text-tertiary'
+          : 'border-text-tertiary text-text-tertiary'
       )}
     >
       {status}

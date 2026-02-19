@@ -100,23 +100,25 @@ export function PortalCard({ deliverable, index, workLogEntries = [] }: PortalCa
           <button
             onClick={() => setExpanded(!expanded)}
             className={cn(
-              'group flex w-full items-center gap-3 px-6 py-4 transition-all duration-300 md:px-8',
-              'cursor-pointer hover:bg-bg-card-hover',
-              expanded && 'bg-bg-elevated'
+              'group flex w-full items-center gap-4 px-6 py-5 transition-all duration-300 md:px-8',
+              'cursor-pointer',
+              expanded
+                ? 'bg-bg-elevated'
+                : 'hover:bg-white/[0.02]'
             )}
             style={{ transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)' }}
           >
-            <motion.span
+            <motion.div
               animate={{ rotate: expanded ? 180 : 0 }}
               transition={{ duration: 0.3, ease: easeOutExpo }}
-              className="shrink-0"
+              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-border-default transition-colors group-hover:border-border-hover group-hover:bg-white/[0.03]"
             >
-              <ChevronDown size={14} className="text-text-tertiary transition-colors group-hover:text-text-secondary" />
-            </motion.span>
-            <span className="font-mono text-xs tracking-[0.12em] text-text-secondary transition-colors group-hover:text-text-primary">
+              <ChevronDown size={14} className="text-text-secondary transition-colors group-hover:text-text-primary" />
+            </motion.div>
+            <span className="font-mono text-sm tracking-[0.08em] text-text-secondary transition-colors group-hover:text-text-primary">
               Deliverables & Outcomes
             </span>
-            <span className="ml-auto shrink-0 rounded-full bg-border-default px-2.5 py-0.5 font-mono text-[10px] text-text-secondary">
+            <span className="ml-auto shrink-0 rounded-full border border-border-default bg-white/[0.03] px-3 py-1 font-mono text-[11px] text-text-secondary transition-colors group-hover:border-border-hover group-hover:text-text-primary">
               {itemCount} {itemCount === 1 ? 'item' : 'items'}
             </span>
           </button>
