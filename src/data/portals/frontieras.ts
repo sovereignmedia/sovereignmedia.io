@@ -21,7 +21,7 @@ export const frontierasPortal: PortalConfig = {
       description:
         'Development of two interactive digital dashboards for retail and institutional investors',
       status: 'In Development',
-      progress: 20,
+      progress: 35,
       progressLabel: 'Prototype Phase',
       pricing: {
         price: '$95,000',
