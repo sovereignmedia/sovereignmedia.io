@@ -31,29 +31,29 @@ export function PortalCard({ deliverable, index, workLogEntries = [] }: PortalCa
         delay: index * 0.1,
         ease: easeOutExpo,
       }}
-      className="group/card relative overflow-hidden border border-border-default transition-all duration-500"
+      className="group/card relative overflow-hidden border border-white/[0.06] backdrop-blur-xl transition-all duration-500"
       style={{
         borderRadius: 'var(--radius-lg)',
-        background: 'linear-gradient(180deg, var(--color-bg-card) 0%, var(--color-bg-elevated) 100%)',
-        boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
+        background: 'linear-gradient(180deg, rgba(20, 28, 31, 0.65) 0%, rgba(15, 23, 26, 0.55) 100%)',
+        boxShadow: '0 4px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.03)',
         transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
       }}
       onMouseEnter={(e) => {
-        e.currentTarget.style.borderColor = 'var(--color-border-hover)'
-        e.currentTarget.style.boxShadow = '0 4px 32px rgba(0,0,0,0.5), 0 0 40px rgba(255,255,255,0.02)'
-        e.currentTarget.style.background = 'linear-gradient(180deg, var(--color-bg-card-hover) 0%, var(--color-bg-card) 100%)'
+        e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'
+        e.currentTarget.style.boxShadow = '0 4px 32px rgba(0,0,0,0.4), 0 0 40px rgba(255,255,255,0.02), inset 0 1px 0 rgba(255,255,255,0.05)'
+        e.currentTarget.style.background = 'linear-gradient(180deg, rgba(24, 32, 35, 0.7) 0%, rgba(18, 26, 29, 0.6) 100%)'
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.borderColor = 'var(--color-border-default)'
-        e.currentTarget.style.boxShadow = '0 4px 24px rgba(0,0,0,0.4)'
-        e.currentTarget.style.background = 'linear-gradient(180deg, var(--color-bg-card) 0%, var(--color-bg-elevated) 100%)'
+        e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)'
+        e.currentTarget.style.boxShadow = '0 4px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.03)'
+        e.currentTarget.style.background = 'linear-gradient(180deg, rgba(20, 28, 31, 0.65) 0%, rgba(15, 23, 26, 0.55) 100%)'
       }}
     >
       {/* Top edge highlight */}
       <div
         className="pointer-events-none absolute inset-x-0 top-0 h-px"
         style={{
-          background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.06) 25%, rgba(255,255,255,0.06) 75%, transparent)',
+          background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.08) 25%, rgba(255,255,255,0.08) 75%, transparent)',
         }}
       />
 

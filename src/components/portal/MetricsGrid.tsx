@@ -23,9 +23,10 @@ export function MetricsGrid({ metrics }: MetricsGridProps) {
             delay: i * 0.05,
             ease: easeOutExpo,
           }}
-          className="relative overflow-hidden rounded-xl border border-border-subtle p-5 text-center transition-all duration-500 hover:border-border-hover"
+          className="relative overflow-hidden rounded-xl border border-white/[0.06] p-5 text-center backdrop-blur-xl transition-all duration-500 hover:border-white/[0.1]"
           style={{
-            background: 'linear-gradient(135deg, var(--color-bg-card) 0%, var(--color-bg-elevated) 100%)',
+            background: 'linear-gradient(135deg, rgba(20, 28, 31, 0.65) 0%, rgba(15, 23, 26, 0.55) 100%)',
+            boxShadow: '0 4px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.03)',
           }}
         >
           {/* Top edge glow */}

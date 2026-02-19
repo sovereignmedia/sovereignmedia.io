@@ -17,19 +17,20 @@ export function PricingCard({ pricing }: PricingCardProps) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-50px' }}
       transition={{ duration: 0.7, delay: 0.1, ease: easeOutExpo }}
-      className="group/pricing relative mt-10 overflow-hidden rounded-xl border border-border-subtle transition-all duration-500"
+      className="group/pricing relative mt-10 overflow-hidden rounded-xl border border-white/[0.06] backdrop-blur-xl transition-all duration-500"
       style={{
-        background: 'linear-gradient(135deg, var(--color-bg-card) 0%, var(--color-bg-elevated) 100%)',
+        background: 'linear-gradient(135deg, rgba(20, 28, 31, 0.65) 0%, rgba(15, 23, 26, 0.55) 100%)',
+        boxShadow: '0 4px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.03)',
       }}
       onMouseEnter={(e) => {
-        e.currentTarget.style.borderColor = 'var(--color-border-hover)'
-        e.currentTarget.style.boxShadow = '0 0 40px rgba(255,255,255,0.03)'
-        e.currentTarget.style.background = 'linear-gradient(135deg, var(--color-bg-card-hover) 0%, var(--color-bg-card) 100%)'
+        e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'
+        e.currentTarget.style.boxShadow = '0 0 40px rgba(255,255,255,0.03), inset 0 1px 0 rgba(255,255,255,0.05)'
+        e.currentTarget.style.background = 'linear-gradient(135deg, rgba(24, 32, 35, 0.7) 0%, rgba(18, 26, 29, 0.6) 100%)'
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.borderColor = 'var(--color-border-subtle)'
-        e.currentTarget.style.boxShadow = '0 0 0 0 rgba(255,255,255,0)'
-        e.currentTarget.style.background = 'linear-gradient(135deg, var(--color-bg-card) 0%, var(--color-bg-elevated) 100%)'
+        e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)'
+        e.currentTarget.style.boxShadow = '0 4px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.03)'
+        e.currentTarget.style.background = 'linear-gradient(135deg, rgba(20, 28, 31, 0.65) 0%, rgba(15, 23, 26, 0.55) 100%)'
       }}
     >
       {/* Top edge glow */}
