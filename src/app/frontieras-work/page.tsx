@@ -27,6 +27,8 @@ interface Deliverable {
   title: string
   description: string
   status: 'In Development' | 'Planned' | 'Completed' | 'Under Review' | 'Ongoing'
+  progress: number // 0-100
+  progressLabel?: string // e.g. "Prototype Phase" or "Architecture Complete"
   subItems?: SubItem[]
   details?: string[]
 }
@@ -55,6 +57,8 @@ const DELIVERABLES: Deliverable[] = [
     title: 'Interactive Investor Intelligence Dashboards',
     description: 'Development of two interactive digital dashboards for retail and institutional investors',
     status: 'In Development',
+    progress: 15,
+    progressLabel: 'Prototype Phase',
     subItems: [
       {
         title: 'Retail Investor Dashboard — The "Investor Dashboard"',
@@ -88,6 +92,8 @@ const DELIVERABLES: Deliverable[] = [
     title: 'Digital Assets for Reg A+ and Post-IPO Marketing',
     description: 'Development and deployment of digital assets for social media marketing and investor conversion',
     status: 'Planned',
+    progress: 0,
+    progressLabel: 'Not Started',
     details: [
       'Deployment of specific dashboard assets onto DealMaker investor portal to increase conversion rates (e.g., market penetration calculator, global patents map)',
       'Video content development',
@@ -100,6 +106,8 @@ const DELIVERABLES: Deliverable[] = [
     title: 'Digital Strategy for Reg A+ Campaign Optimization',
     description: 'Accelerate the Reg A+ raise timeline while ensuring highest ROAS possible on $75M raise',
     status: 'Planned',
+    progress: 0,
+    progressLabel: 'Not Started',
     details: [
       'Target: elevation from 4-5x ROAS to at least 6-10x ROAS',
       'On a $75M raise, this can save Frontieras anywhere from $2.5M–$7.5M in capital acquisition costs on advertising',
@@ -114,6 +122,8 @@ const DELIVERABLES: Deliverable[] = [
     title: 'Coordination & Integration',
     description: 'Cross-functional coordination across all stakeholders to ensure proper implementation and distribution',
     status: 'Ongoing',
+    progress: 10,
+    progressLabel: 'Initial Assessment',
     details: [
       'Coordination with software developers as needed for dashboard development',
       'Coordination with Frontieras, Market Street Capital, Hybrid Financial, IR firm, and other firms for institutional dashboard implementation',
@@ -195,6 +205,81 @@ const CAMPAIGN_METRICS = [
 ]
 
 // ============================================
+// Progress Bar
+// ============================================
+
+function ProgressBar({
+  progress,
+  label,
+  index,
+}: {
+  progress: number
+  label?: string
+  index: number
+}) {
+  const isComplete = progress >= 100
+  const isEmpty = progress === 0
+
+  return (
+    <div className="group/progress px-6 pt-5 md:px-8">
+      {/* Label row */}
+      <div className="mb-2 flex items-center justify-between">
+        <span
+          className={cn(
+            'font-mono text-xs tracking-wide',
+            isEmpty ? 'text-text-tertiary/60' : 'text-text-secondary'
+          )}
+        >
+          {label || (isEmpty ? 'Not Started' : `${progress}% Complete`)}
+        </span>
+        <span
+          className={cn(
+            'font-mono text-xs transition-colors duration-normal group-hover/progress:text-text-primary',
+            isEmpty ? 'text-text-tertiary/40' : 'text-text-primary'
+          )}
+        >
+          {progress}%
+        </span>
+      </div>
+
+      {/* Track */}
+      <div className="relative h-1 w-full overflow-hidden rounded-full bg-[#1A1A1A]">
+        {/* Fill */}
+        {progress > 0 && (
+          <motion.div
+            className="absolute inset-y-0 left-0 rounded-full"
+            style={{
+              background: isComplete
+                ? 'linear-gradient(to right, #00CC66, #22dd77)'
+                : 'linear-gradient(to right, #0066FF, #3388FF)',
+            }}
+            initial={{ width: '0%' }}
+            whileInView={{ width: `${progress}%` }}
+            viewport={{ once: true }}
+            transition={{
+              duration: 1,
+              delay: 0.3 + index * 0.15,
+              ease: easeOutExpo,
+            }}
+          >
+            {/* Leading edge glow */}
+            <div
+              className="absolute right-0 top-1/2 h-3 w-3 -translate-y-1/2 translate-x-1/2 rounded-full"
+              style={{
+                background: isComplete
+                  ? 'rgba(0, 204, 102, 0.3)'
+                  : 'rgba(0, 102, 255, 0.3)',
+                filter: 'blur(4px)',
+              }}
+            />
+          </motion.div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ============================================
 // Status Badge
 // ============================================
 
@@ -258,7 +343,7 @@ function ProofOfWorkLog({ deliverableId }: { deliverableId: string }) {
           </motion.span>
         )}
         <span className="font-mono text-xs uppercase tracking-[0.15em] text-text-tertiary transition-colors group-hover:text-text-secondary">
-          Proof of Work Log
+          Work Log
         </span>
         <span className="ml-auto shrink-0 rounded-full bg-bg-elevated px-2.5 py-0.5 font-mono text-[10px] text-text-tertiary">
           {count} {count === 1 ? 'entry' : 'entries'}
@@ -395,6 +480,13 @@ function DeliverableCard({
         </div>
         <StatusBadge status={deliverable.status} />
       </button>
+
+      {/* Progress bar */}
+      <ProgressBar
+        progress={deliverable.progress}
+        label={deliverable.progressLabel}
+        index={index}
+      />
 
       {/* Expandable content */}
       <AnimatePresence initial={false}>
