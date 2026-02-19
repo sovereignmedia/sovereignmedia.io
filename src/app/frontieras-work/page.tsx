@@ -907,26 +907,5 @@ function PortalContent() {
 // ============================================
 
 export default function FrontierasWorkPage() {
-  const [authenticated, setAuthenticated] = useState<boolean | null>(null)
-
-  // Check cookie on mount
-  useEffect(() => {
-    fetch('/api/auth/check-client?clientId=frontieras', { cache: 'no-store' })
-      .then((res) => res.json())
-      .then((data) => setAuthenticated(data.authenticated))
-      .catch(() => setAuthenticated(false))
-  }, [])
-
-  // Loading state
-  if (authenticated === null) {
-    return <div className="min-h-screen bg-bg-primary" />
-  }
-
-  if (!authenticated) {
-    return (
-      <ClientPasswordGate onSuccess={() => setAuthenticated(true)} />
-    )
-  }
-
   return <PortalContent />
 }
