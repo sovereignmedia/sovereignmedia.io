@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowRight, ChevronDown } from 'lucide-react'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
+import { GridBackground, GlowOrb } from '@/components/effects/GridBackground'
 
 // ============================================
 // Animation config
@@ -199,17 +200,17 @@ const CAMPAIGN_METRICS = [
 
 function StatusBadge({ status }: { status: string }) {
   const colors: Record<string, string> = {
-    'In Development': 'bg-[#22c55e]/10 border-[#22c55e]/30 text-[#22c55e]',
-    Planned: 'bg-[#eab308]/10 border-[#eab308]/30 text-[#eab308]',
-    Completed: 'border-success text-success',
-    'Under Review': 'border-warning text-warning',
-    Ongoing: 'bg-[#22c55e]/10 border-[#22c55e]/30 text-[#22c55e]',
+    'In Development': 'bg-[#22c55e]/8 border-[#22c55e]/30 text-[#22c55e]',
+    Planned: 'bg-transparent border-border-default text-text-tertiary',
+    Completed: 'bg-[#22c55e]/15 border-[#22c55e]/30 text-[#22c55e]',
+    'Under Review': 'bg-[#ffaa00]/8 border-[#ffaa00]/30 text-[#ffaa00]',
+    Ongoing: 'bg-accent-blue/8 border-accent-blue/30 text-accent-blue',
   }
 
   return (
     <span
       className={cn(
-        'inline-block shrink-0 rounded-sm border px-2.5 py-1 font-mono text-label uppercase tracking-wider',
+        'inline-block shrink-0 rounded-full border px-3 py-1 font-mono text-xs uppercase tracking-wider',
         colors[status] || 'border-text-tertiary text-text-tertiary'
       )}
     >
@@ -228,30 +229,38 @@ function ProofOfWorkLog({ deliverableId }: { deliverableId: string }) {
   const count = entries.length
 
   return (
-    <div className="mt-6 pt-4">
+    <div className="mt-0">
+      {/* Divider line inside card */}
+      <div
+        className="h-px w-full"
+        style={{
+          background:
+            'linear-gradient(to right, var(--color-border-subtle), var(--color-border-default) 50%, var(--color-border-subtle))',
+        }}
+      />
       <button
         onClick={() => count > 0 && setExpanded(!expanded)}
         className={cn(
-          'group relative flex w-max items-center gap-2.5 overflow-hidden rounded-md border px-5 py-2.5 transition-all duration-normal',
+          'group flex w-full items-center gap-3 px-6 py-4 transition-all duration-normal md:px-8',
           count > 0
-            ? 'cursor-pointer border-border-default bg-bg-elevated/60 hover:border-border-hover hover:bg-bg-card'
-            : 'cursor-default border-border-subtle bg-bg-elevated/30',
-          expanded && 'border-border-hover bg-bg-card'
+            ? 'cursor-pointer hover:bg-[#1A1A1A]'
+            : 'cursor-default',
+          expanded && 'bg-[#0D0D0D]'
         )}
       >
         {count > 0 && (
           <motion.span
             animate={{ rotate: expanded ? 180 : 0 }}
             transition={{ duration: 0.3, ease: easeOutExpo }}
+            className="shrink-0"
           >
-            <ChevronDown size={13} className="text-text-tertiary transition-colors group-hover:text-text-secondary" />
+            <ChevronDown size={14} className="text-text-tertiary transition-colors group-hover:text-text-secondary" />
           </motion.span>
         )}
         <span className="font-mono text-xs uppercase tracking-[0.15em] text-text-tertiary transition-colors group-hover:text-text-secondary">
-          Work Log
+          Proof of Work Log
         </span>
-        <span className="h-1 w-1 rounded-full bg-text-tertiary/40" />
-        <span className="font-mono text-xs text-text-tertiary/60">
+        <span className="ml-auto shrink-0 rounded-full bg-bg-elevated px-2.5 py-0.5 font-mono text-[10px] text-text-tertiary">
           {count} {count === 1 ? 'entry' : 'entries'}
         </span>
       </button>
@@ -265,7 +274,7 @@ function ProofOfWorkLog({ deliverableId }: { deliverableId: string }) {
             transition={{ duration: 0.4, ease: easeOutExpo }}
             className="overflow-hidden"
           >
-            <div className="mt-4 space-y-0">
+            <div className="space-y-0 px-6 pb-6 pt-2 md:px-8">
               {entries.map((entry, i) => (
                 <div
                   key={entry.date + entry.title}
@@ -303,12 +312,6 @@ function ProofOfWorkLog({ deliverableId }: { deliverableId: string }) {
           </motion.div>
         )}
       </AnimatePresence>
-
-      {expanded && count === 0 && (
-        <p className="mt-2 text-body-sm text-text-tertiary">
-          No work documented yet.
-        </p>
-      )}
     </div>
   )
 }
@@ -337,13 +340,35 @@ function DeliverableCard({
         delay: index * 0.1,
         ease: easeOutExpo,
       }}
-      className="rounded-lg border border-border-subtle bg-bg-card p-6 md:p-8"
+      className="group/card relative overflow-hidden rounded-xl border border-border-subtle transition-all duration-500"
+      style={{
+        background: 'linear-gradient(135deg, #111111 0%, #0D0D0D 100%)',
+        boxShadow: '0 0 0 0 rgba(255,255,255,0)',
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.borderColor = 'var(--color-border-hover)'
+        e.currentTarget.style.boxShadow = '0 0 40px rgba(255,255,255,0.03)'
+        e.currentTarget.style.background = 'linear-gradient(135deg, #151515 0%, #0F0F0F 100%)'
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.borderColor = 'var(--color-border-subtle)'
+        e.currentTarget.style.boxShadow = '0 0 0 0 rgba(255,255,255,0)'
+        e.currentTarget.style.background = 'linear-gradient(135deg, #111111 0%, #0D0D0D 100%)'
+      }}
     >
+      {/* Top edge glow */}
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 h-px"
+        style={{
+          background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.08) 30%, rgba(255,255,255,0.08) 70%, transparent)',
+        }}
+      />
+
       {/* Header — clickable to expand */}
       <button
         onClick={() => hasContent && setExpanded(!expanded)}
         className={cn(
-          'flex w-full flex-col gap-3 text-left sm:flex-row sm:items-start sm:justify-between sm:gap-4',
+          'flex w-full flex-col gap-3 p-6 text-left sm:flex-row sm:items-start sm:justify-between sm:gap-4 md:p-8',
           hasContent && 'cursor-pointer'
         )}
       >
@@ -353,16 +378,16 @@ function DeliverableCard({
               <motion.span
                 animate={{ rotate: expanded ? 180 : 0 }}
                 transition={{ duration: 0.3, ease: easeOutExpo }}
-                className="mt-1 shrink-0"
+                className="mt-1.5 shrink-0"
               >
                 <ChevronDown size={16} className="text-text-tertiary" />
               </motion.span>
             )}
             <div>
-              <h3 className="font-display text-heading-sm font-semibold text-text-primary md:text-heading-md">
+              <h3 className="font-display text-heading-md font-semibold text-text-primary md:text-heading-lg">
                 {deliverable.title}
               </h3>
-              <p className="mt-2 text-body-sm text-text-secondary md:text-body-md">
+              <p className="mt-2 tracking-wide text-body-sm text-text-secondary md:text-body-md">
                 {deliverable.description}
               </p>
             </div>
@@ -381,61 +406,63 @@ function DeliverableCard({
             transition={{ duration: 0.4, ease: easeOutExpo }}
             className="overflow-hidden"
           >
-            {/* Sub-items (for dashboards deliverable) */}
-            {deliverable.subItems && (
-              <div className="mt-6 space-y-6">
-                {deliverable.subItems.map((sub) => (
-                  <div
-                    key={sub.title}
-                    className="rounded-md border border-border-subtle/60 bg-bg-elevated p-5"
-                  >
-                    <h4 className="text-body-md font-medium text-text-primary">
-                      {sub.title}
-                    </h4>
-                    <ul className="mt-3 space-y-2">
-                      {sub.details.map((detail, j) => (
-                        <li
-                          key={j}
-                          className="relative pl-4 text-body-sm leading-relaxed text-text-secondary before:absolute before:left-0 before:top-[0.55em] before:h-1 before:w-1 before:rounded-full before:bg-text-tertiary/50"
-                        >
-                          {detail}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Flat details list (for other deliverables) */}
-            {deliverable.details && (
-              <ul className="mt-5 space-y-2">
-                {deliverable.details.map((detail, j) => {
-                  const isHighlight =
-                    deliverable.id === 'campaign-strategy' &&
-                    detail.includes('$2.5M')
-
-                  return (
-                    <li
-                      key={j}
-                      className={cn(
-                        'relative pl-4 text-body-sm leading-relaxed before:absolute before:left-0 before:top-[0.55em] before:h-1 before:w-1 before:rounded-full',
-                        isHighlight
-                          ? 'text-text-primary font-medium before:bg-accent-blue'
-                          : 'text-text-secondary before:bg-text-tertiary/50'
-                      )}
+            <div className="px-6 pb-6 md:px-8 md:pb-8">
+              {/* Sub-items (for dashboards deliverable) */}
+              {deliverable.subItems && (
+                <div className="space-y-5">
+                  {deliverable.subItems.map((sub) => (
+                    <div
+                      key={sub.title}
+                      className="rounded-lg border-l-2 border-l-accent-blue/25 border-y border-r border-y-border-subtle/40 border-r-border-subtle/40 bg-[#0A0A0A] p-5 backdrop-blur-sm"
                     >
-                      {detail}
-                    </li>
-                  )
-                })}
-              </ul>
-            )}
+                      <h4 className="text-body-md font-medium text-text-primary">
+                        {sub.title}
+                      </h4>
+                      <ul className="mt-4 space-y-3">
+                        {sub.details.map((detail, j) => (
+                          <li
+                            key={j}
+                            className="relative pl-4 text-body-sm leading-[1.7] text-text-secondary before:absolute before:left-0 before:top-[0.6em] before:h-1 before:w-1 before:rounded-full before:bg-text-tertiary/40"
+                          >
+                            {detail}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Flat details list (for other deliverables) */}
+              {deliverable.details && (
+                <ul className="space-y-2.5">
+                  {deliverable.details.map((detail, j) => {
+                    const isHighlight =
+                      deliverable.id === 'campaign-strategy' &&
+                      detail.includes('$2.5M')
+
+                    return (
+                      <li
+                        key={j}
+                        className={cn(
+                          'relative pl-4 text-body-sm leading-[1.7] before:absolute before:left-0 before:top-[0.6em] before:h-1 before:w-1 before:rounded-full',
+                          isHighlight
+                            ? 'text-text-primary font-medium before:bg-accent-blue'
+                            : 'text-text-secondary before:bg-text-tertiary/40'
+                        )}
+                      >
+                        {detail}
+                      </li>
+                    )
+                  })}
+                </ul>
+              )}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Work Log */}
+      {/* Proof of Work Log — integrated into card bottom */}
       <ProofOfWorkLog deliverableId={deliverable.id} />
     </motion.div>
   )
@@ -599,18 +626,20 @@ function PageSection({
 }
 
 // ============================================
-// Gradient divider
+// Gradient divider (using the effects component style)
 // ============================================
 
 function Divider() {
   return (
-    <div
-      className="h-px w-full"
-      style={{
-        background:
-          'linear-gradient(to right, transparent, var(--color-border-default) 20%, var(--color-border-default) 80%, transparent)',
-      }}
-    />
+    <div className="mx-auto w-full max-w-5xl px-6 md:px-8">
+      <div
+        className="h-px w-full"
+        style={{
+          background:
+            'linear-gradient(to right, transparent, var(--color-border-default) 20%, var(--color-border-default) 80%, transparent)',
+        }}
+      />
+    </div>
   )
 }
 
@@ -624,8 +653,30 @@ function PortalContent() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.8, ease: easeOutExpo }}
-      className="min-h-screen bg-bg-primary"
+      className="relative min-h-screen bg-bg-primary"
     >
+      {/* Page-level atmosphere */}
+      <div className="pointer-events-none fixed inset-0 z-0">
+        <GridBackground variant="radial" />
+        <GlowOrb className="-top-20 right-[15%]" color="blue" size={500} delay={0} />
+        <GlowOrb className="bottom-[20%] -left-20" color="white" size={400} delay={3} />
+      </div>
+
+      {/* Noise overlay */}
+      <div className="pointer-events-none fixed inset-0 z-0 opacity-[0.02]">
+        <svg className="h-full w-full">
+          <filter id="portal-noise">
+            <feTurbulence
+              type="fractalNoise"
+              baseFrequency="0.9"
+              numOctaves="4"
+              stitchTiles="stitch"
+            />
+          </filter>
+          <rect width="100%" height="100%" filter="url(#portal-noise)" />
+        </svg>
+      </div>
+
       {/* HEADER */}
       <header className="sticky top-0 z-50 border-b border-border-subtle bg-bg-primary/80 backdrop-blur-xl">
         <div className="mx-auto flex h-16 w-full max-w-5xl items-center justify-between px-6 md:px-8">
@@ -642,7 +693,7 @@ function PortalContent() {
       </header>
 
       {/* HERO */}
-      <PageSection className="pb-12 pt-20 md:pb-16 md:pt-28">
+      <PageSection className="relative z-10 pb-12 pt-20 md:pb-16 md:pt-28">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -669,7 +720,7 @@ function PortalContent() {
       <Divider />
 
       {/* ENGAGEMENT OVERVIEW */}
-      <PageSection>
+      <PageSection className="relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -682,7 +733,7 @@ function PortalContent() {
           <h2 className="mt-4 font-display text-heading-lg font-semibold text-text-primary">
             Engagement Overview
           </h2>
-          <p className="mt-6 max-w-3xl text-body-lg text-text-secondary">
+          <p className="mt-6 max-w-3xl text-body-lg leading-relaxed text-text-secondary">
             {ENGAGEMENT_OVERVIEW}
           </p>
         </motion.div>
@@ -691,7 +742,7 @@ function PortalContent() {
       <Divider />
 
       {/* SCOPE OF WORK */}
-      <PageSection>
+      <PageSection className="relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -720,7 +771,7 @@ function PortalContent() {
       <Divider />
 
       {/* INVESTMENT & PRICING */}
-      <PageSection>
+      <PageSection className="relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -740,18 +791,44 @@ function PortalContent() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-50px' }}
           transition={{ duration: 0.7, delay: 0.1, ease: easeOutExpo }}
-          className="mt-10 overflow-hidden rounded-lg border border-border-subtle bg-bg-card"
+          className="group/pricing relative mt-10 overflow-hidden rounded-xl border border-border-subtle transition-all duration-500"
+          style={{
+            background: 'linear-gradient(135deg, #111111 0%, #0D0D0D 100%)',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.borderColor = 'var(--color-border-hover)'
+            e.currentTarget.style.boxShadow = '0 0 40px rgba(255,255,255,0.03)'
+            e.currentTarget.style.background = 'linear-gradient(135deg, #151515 0%, #0F0F0F 100%)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = 'var(--color-border-subtle)'
+            e.currentTarget.style.boxShadow = '0 0 0 0 rgba(255,255,255,0)'
+            e.currentTarget.style.background = 'linear-gradient(135deg, #111111 0%, #0D0D0D 100%)'
+          }}
         >
+          {/* Top edge glow */}
+          <div
+            className="pointer-events-none absolute inset-x-0 top-0 h-px"
+            style={{
+              background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.08) 30%, rgba(255,255,255,0.08) 70%, transparent)',
+            }}
+          />
+
           <div className="p-6 md:p-8">
-            <h3 className="font-display text-heading-sm font-semibold text-text-primary md:text-heading-md">
+            <h3 className="font-display text-heading-md font-semibold text-text-primary md:text-heading-lg">
               {PRICING.title}
             </h3>
-            <p className="mt-3 max-w-2xl text-body-sm text-text-secondary">
+            <p className="mt-3 max-w-2xl tracking-wide text-body-sm text-text-secondary">
               {PRICING.description}
             </p>
 
             <div className="mt-8 flex flex-col gap-1 sm:flex-row sm:items-baseline sm:gap-4">
-              <span className="font-mono text-4xl font-semibold text-text-primary md:text-5xl">
+              <span
+                className="font-mono text-4xl font-semibold text-text-primary md:text-5xl"
+                style={{
+                  textShadow: '0 0 40px rgba(255,255,255,0.1)',
+                }}
+              >
                 {PRICING.price}
               </span>
               <span className="font-mono text-body-sm text-text-tertiary">
@@ -772,7 +849,7 @@ function PortalContent() {
                 href={INVOICE_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-md bg-accent-blue px-5 py-2.5 font-mono text-sm font-medium text-white transition-all duration-normal hover:bg-accent-blue/85"
+                className="inline-flex items-center gap-2 rounded-md bg-accent-blue px-5 py-2.5 font-mono text-sm font-medium text-white transition-all duration-300 hover:bg-accent-blue/85 hover:shadow-[0_0_20px_rgba(0,102,255,0.25)]"
               >
                 View Invoice
                 <ArrowRight size={14} />
@@ -785,7 +862,7 @@ function PortalContent() {
       <Divider />
 
       {/* PROGRESS & UPDATES */}
-      <PageSection>
+      <PageSection className="relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -822,7 +899,7 @@ function PortalContent() {
               <h3 className="mt-2 font-display text-heading-sm font-semibold text-text-primary">
                 {entry.title}
               </h3>
-              <p className="mt-2 max-w-2xl text-body-sm text-text-secondary">
+              <p className="mt-2 max-w-2xl text-body-sm leading-relaxed text-text-secondary">
                 {entry.description}
               </p>
             </motion.div>
@@ -833,7 +910,7 @@ function PortalContent() {
       <Divider />
 
       {/* PREVIOUS CAMPAIGN RESULTS */}
-      <PageSection>
+      <PageSection className="relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -846,7 +923,7 @@ function PortalContent() {
           <h2 className="mt-4 font-display text-heading-lg font-semibold text-text-primary">
             Previous Engagement Results — Regulation CF Campaign
           </h2>
-          <p className="mt-4 max-w-3xl text-body-md text-text-secondary">
+          <p className="mt-4 max-w-3xl text-body-md leading-relaxed text-text-secondary">
             During our previous engagement, Sovereign Media architected and
             executed Frontieras&apos; Regulation CF campaign, delivering the
             following results against an original forecast budget of $1.485M:
@@ -865,12 +942,22 @@ function PortalContent() {
                 delay: i * 0.05,
                 ease: easeOutExpo,
               }}
-              className="rounded-lg border border-border-subtle bg-bg-card p-5 text-center"
+              className="relative overflow-hidden rounded-xl border border-border-subtle p-5 text-center transition-all duration-500 hover:border-border-hover"
+              style={{
+                background: 'linear-gradient(135deg, #111111 0%, #0D0D0D 100%)',
+              }}
             >
+              {/* Top edge glow */}
+              <div
+                className="pointer-events-none absolute inset-x-0 top-0 h-px"
+                style={{
+                  background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.06) 40%, rgba(255,255,255,0.06) 60%, transparent)',
+                }}
+              />
               <p className="font-mono text-xl font-semibold text-text-primary sm:text-2xl">
                 {metric.value}
               </p>
-              <p className="mt-2 font-mono text-label uppercase tracking-wider text-text-tertiary">
+              <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.15em] text-text-tertiary">
                 {metric.label}
               </p>
             </motion.div>
@@ -881,7 +968,7 @@ function PortalContent() {
       <Divider />
 
       {/* FOOTER */}
-      <footer className="py-16">
+      <footer className="relative z-10 py-16">
         <div className="mx-auto w-full max-w-5xl px-6 md:px-8">
           <p className="text-body-sm text-text-tertiary">
             This document is confidential and intended solely for Frontieras
