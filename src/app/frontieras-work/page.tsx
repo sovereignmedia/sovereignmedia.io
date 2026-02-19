@@ -57,7 +57,7 @@ const DELIVERABLES: Deliverable[] = [
     title: 'Interactive Investor Intelligence Dashboards',
     description: 'Development of two interactive digital dashboards for retail and institutional investors',
     status: 'In Development',
-    progress: 15,
+    progress: 20,
     progressLabel: 'Prototype Phase',
     subItems: [
       {
