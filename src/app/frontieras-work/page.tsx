@@ -232,7 +232,7 @@ function ProofOfWorkLog({ deliverableId }: { deliverableId: string }) {
       <button
         onClick={() => count > 0 && setExpanded(!expanded)}
         className={cn(
-          'group relative flex w-full items-center justify-center gap-2.5 overflow-hidden rounded-md border px-5 py-2.5 transition-all duration-normal',
+          'group relative flex w-max items-center gap-2.5 overflow-hidden rounded-md border px-5 py-2.5 transition-all duration-normal',
           count > 0
             ? 'cursor-pointer border-border-default bg-bg-elevated/60 hover:border-border-hover hover:bg-bg-card'
             : 'cursor-default border-border-subtle bg-bg-elevated/30',
@@ -324,6 +324,9 @@ function DeliverableCard({
   deliverable: Deliverable
   index: number
 }) {
+  const [expanded, setExpanded] = useState(false)
+  const hasContent = !!(deliverable.subItems || deliverable.details)
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
@@ -336,72 +339,103 @@ function DeliverableCard({
       }}
       className="rounded-lg border border-border-subtle bg-bg-card p-6 md:p-8"
     >
-      {/* Header */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
-        <div>
-          <h3 className="font-display text-heading-sm font-semibold text-text-primary md:text-heading-md">
-            {deliverable.title}
-          </h3>
-          <p className="mt-2 text-body-sm text-text-secondary md:text-body-md">
-            {deliverable.description}
-          </p>
+      {/* Header — clickable to expand */}
+      <button
+        onClick={() => hasContent && setExpanded(!expanded)}
+        className={cn(
+          'flex w-full flex-col gap-3 text-left sm:flex-row sm:items-start sm:justify-between sm:gap-4',
+          hasContent && 'cursor-pointer'
+        )}
+      >
+        <div className="flex-1">
+          <div className="flex items-start gap-3">
+            {hasContent && (
+              <motion.span
+                animate={{ rotate: expanded ? 180 : 0 }}
+                transition={{ duration: 0.3, ease: easeOutExpo }}
+                className="mt-1 shrink-0"
+              >
+                <ChevronDown size={16} className="text-text-tertiary" />
+              </motion.span>
+            )}
+            <div>
+              <h3 className="font-display text-heading-sm font-semibold text-text-primary md:text-heading-md">
+                {deliverable.title}
+              </h3>
+              <p className="mt-2 text-body-sm text-text-secondary md:text-body-md">
+                {deliverable.description}
+              </p>
+            </div>
+          </div>
         </div>
         <StatusBadge status={deliverable.status} />
-      </div>
+      </button>
 
-      {/* Sub-items (for dashboards deliverable) */}
-      {deliverable.subItems && (
-        <div className="mt-6 space-y-6">
-          {deliverable.subItems.map((sub) => (
-            <div
-              key={sub.title}
-              className="rounded-md border border-border-subtle/60 bg-bg-elevated p-5"
-            >
-              <h4 className="text-body-md font-medium text-text-primary">
-                {sub.title}
-              </h4>
-              <ul className="mt-3 space-y-2">
-                {sub.details.map((detail, j) => (
-                  <li
-                    key={j}
-                    className="relative pl-4 text-body-sm leading-relaxed text-text-secondary before:absolute before:left-0 before:top-[0.55em] before:h-1 before:w-1 before:rounded-full before:bg-text-tertiary/50"
+      {/* Expandable content */}
+      <AnimatePresence initial={false}>
+        {expanded && hasContent && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.4, ease: easeOutExpo }}
+            className="overflow-hidden"
+          >
+            {/* Sub-items (for dashboards deliverable) */}
+            {deliverable.subItems && (
+              <div className="mt-6 space-y-6">
+                {deliverable.subItems.map((sub) => (
+                  <div
+                    key={sub.title}
+                    className="rounded-md border border-border-subtle/60 bg-bg-elevated p-5"
                   >
-                    {detail}
-                  </li>
+                    <h4 className="text-body-md font-medium text-text-primary">
+                      {sub.title}
+                    </h4>
+                    <ul className="mt-3 space-y-2">
+                      {sub.details.map((detail, j) => (
+                        <li
+                          key={j}
+                          className="relative pl-4 text-body-sm leading-relaxed text-text-secondary before:absolute before:left-0 before:top-[0.55em] before:h-1 before:w-1 before:rounded-full before:bg-text-tertiary/50"
+                        >
+                          {detail}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 ))}
+              </div>
+            )}
+
+            {/* Flat details list (for other deliverables) */}
+            {deliverable.details && (
+              <ul className="mt-5 space-y-2">
+                {deliverable.details.map((detail, j) => {
+                  const isHighlight =
+                    deliverable.id === 'campaign-strategy' &&
+                    detail.includes('$2.5M')
+
+                  return (
+                    <li
+                      key={j}
+                      className={cn(
+                        'relative pl-4 text-body-sm leading-relaxed before:absolute before:left-0 before:top-[0.55em] before:h-1 before:w-1 before:rounded-full',
+                        isHighlight
+                          ? 'text-text-primary font-medium before:bg-accent-blue'
+                          : 'text-text-secondary before:bg-text-tertiary/50'
+                      )}
+                    >
+                      {detail}
+                    </li>
+                  )
+                })}
               </ul>
-            </div>
-          ))}
-        </div>
-      )}
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* Flat details list (for other deliverables) */}
-      {deliverable.details && (
-        <ul className="mt-5 space-y-2">
-          {deliverable.details.map((detail, j) => {
-            // Highlight the savings callout in campaign-strategy
-            const isHighlight =
-              deliverable.id === 'campaign-strategy' &&
-              detail.includes('$2.5M')
-
-            return (
-              <li
-                key={j}
-                className={cn(
-                  'relative pl-4 text-body-sm leading-relaxed before:absolute before:left-0 before:top-[0.55em] before:h-1 before:w-1 before:rounded-full',
-                  isHighlight
-                    ? 'text-text-primary font-medium before:bg-accent-blue'
-                    : 'text-text-secondary before:bg-text-tertiary/50'
-                )}
-              >
-                {detail}
-              </li>
-            )
-          })}
-        </ul>
-      )}
-
-      {/* Proof of Work Log */}
+      {/* Work Log */}
       <ProofOfWorkLog deliverableId={deliverable.id} />
     </motion.div>
   )
