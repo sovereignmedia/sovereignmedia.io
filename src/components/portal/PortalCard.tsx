@@ -21,6 +21,13 @@ export function PortalCard({ deliverable, index, workLogEntries = [] }: PortalCa
   const [expanded, setExpanded] = useState(false)
   const hasContent = !!(deliverable.subItems || deliverable.details)
 
+  // Count items for the badge
+  const itemCount = deliverable.subItems
+    ? deliverable.subItems.length
+    : deliverable.details
+      ? deliverable.details.length
+      : 0
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
@@ -57,37 +64,18 @@ export function PortalCard({ deliverable, index, workLogEntries = [] }: PortalCa
         }}
       />
 
-      {/* Header — clickable to expand */}
-      <button
-        onClick={() => hasContent && setExpanded(!expanded)}
-        className={cn(
-          'flex w-full flex-col gap-3 p-6 pb-0 text-left sm:flex-row sm:items-start sm:justify-between sm:gap-4 md:p-8 md:pb-0',
-          hasContent && 'cursor-pointer'
-        )}
-      >
+      {/* Header — static, not clickable */}
+      <div className="flex w-full flex-col gap-3 p-6 pb-0 sm:flex-row sm:items-start sm:justify-between sm:gap-4 md:p-8 md:pb-0">
         <div className="flex-1">
-          <div className="flex items-start gap-3">
-            {hasContent && (
-              <motion.span
-                animate={{ rotate: expanded ? 180 : 0 }}
-                transition={{ duration: 0.3, ease: easeOutExpo }}
-                className="mt-1.5 shrink-0"
-              >
-                <ChevronDown size={16} className="text-text-tertiary" />
-              </motion.span>
-            )}
-            <div>
-              <h3 className="mb-2 font-display text-heading-md font-semibold text-text-primary md:text-heading-lg">
-                {deliverable.title}
-              </h3>
-              <p className="mb-6 tracking-wide text-body-sm text-text-secondary md:text-body-md">
-                {deliverable.description}
-              </p>
-            </div>
-          </div>
+          <h3 className="mb-2 font-display text-heading-md font-semibold text-text-primary md:text-heading-lg">
+            {deliverable.title}
+          </h3>
+          <p className="mb-6 tracking-wide text-body-sm text-text-secondary md:text-body-md">
+            {deliverable.description}
+          </p>
         </div>
         <StatusBadge status={deliverable.status} />
-      </button>
+      </div>
 
       {/* Progress bar */}
       <ProgressBar
@@ -96,74 +84,113 @@ export function PortalCard({ deliverable, index, workLogEntries = [] }: PortalCa
         index={index}
       />
 
-      {/* Expandable content */}
-      <AnimatePresence initial={false}>
-        {expanded && hasContent && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.4, ease: easeOutExpo }}
-            className="overflow-hidden"
+      {/* Deliverables & Outcomes — collapsible section */}
+      {hasContent && (
+        <div>
+          {/* Divider line */}
+          <div
+            className="h-px w-full"
+            style={{
+              background:
+                'linear-gradient(to right, transparent, var(--color-border-subtle) 15%, var(--color-border-subtle) 85%, transparent)',
+            }}
+          />
+
+          {/* Clickable row */}
+          <button
+            onClick={() => setExpanded(!expanded)}
+            className={cn(
+              'group flex w-full items-center gap-3 px-6 py-4 transition-all duration-300 md:px-8',
+              'cursor-pointer hover:bg-bg-card-hover',
+              expanded && 'bg-bg-elevated'
+            )}
+            style={{ transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)' }}
           >
-            <div className="px-6 pb-6 md:px-8 md:pb-8">
-              {/* Sub-items (for dashboards deliverable) */}
-              {deliverable.subItems && (
-                <div className="space-y-5">
-                  {deliverable.subItems.map((sub) => (
-                    <div
-                      key={sub.title}
-                      className="rounded-lg border border-border-subtle/30 border-l-2 border-l-accent-blue/25 p-5 md:p-6"
-                      style={{
-                        borderRadius: 'var(--radius-md)',
-                        background: 'var(--color-bg-elevated)',
-                      }}
-                    >
-                      <h4 className="text-body-md font-medium text-text-primary">
-                        {sub.title}
-                      </h4>
-                      <ul className="mt-4 flex flex-col gap-3">
-                        {sub.details.map((detail, j) => (
+            <motion.span
+              animate={{ rotate: expanded ? 180 : 0 }}
+              transition={{ duration: 0.3, ease: easeOutExpo }}
+              className="shrink-0"
+            >
+              <ChevronDown size={14} className="text-text-tertiary transition-colors group-hover:text-text-secondary" />
+            </motion.span>
+            <span className="font-mono text-xs tracking-[0.12em] text-text-tertiary transition-colors group-hover:text-text-secondary">
+              Deliverables & Outcomes
+            </span>
+            <span className="ml-auto shrink-0 rounded-full bg-border-subtle px-2.5 py-0.5 font-mono text-[10px] text-text-tertiary">
+              {itemCount} {itemCount === 1 ? 'item' : 'items'}
+            </span>
+          </button>
+
+          {/* Expandable content */}
+          <AnimatePresence initial={false}>
+            {expanded && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.4, ease: easeOutExpo }}
+                className="overflow-hidden"
+              >
+                <div className="px-6 pb-6 md:px-8 md:pb-8">
+                  {/* Sub-items (for dashboards deliverable) */}
+                  {deliverable.subItems && (
+                    <div className="space-y-5">
+                      {deliverable.subItems.map((sub) => (
+                        <div
+                          key={sub.title}
+                          className="rounded-lg border border-border-subtle/30 border-l-2 border-l-accent-blue/25 p-5 md:p-6"
+                          style={{
+                            borderRadius: 'var(--radius-md)',
+                            background: 'var(--color-bg-elevated)',
+                          }}
+                        >
+                          <h4 className="text-body-md font-medium text-text-primary">
+                            {sub.title}
+                          </h4>
+                          <ul className="mt-4 flex flex-col gap-3">
+                            {sub.details.map((detail, j) => (
+                              <li
+                                key={j}
+                                className="relative pl-5 text-body-sm leading-[1.75] text-text-secondary before:absolute before:left-0 before:top-[0.55em] before:h-[5px] before:w-[5px] before:rounded-full before:bg-text-tertiary/30"
+                              >
+                                {detail}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Flat details list (for other deliverables) */}
+                  {deliverable.details && (
+                    <ul className="flex flex-col gap-3">
+                      {deliverable.details.map((detail, j) => {
+                        const isHighlight =
+                          deliverable.highlightMatch && detail.includes(deliverable.highlightMatch)
+
+                        return (
                           <li
                             key={j}
-                            className="relative pl-5 text-body-sm leading-[1.75] text-text-secondary before:absolute before:left-0 before:top-[0.55em] before:h-[5px] before:w-[5px] before:rounded-full before:bg-text-tertiary/30"
+                            className={cn(
+                              'relative pl-5 text-body-sm leading-[1.75] before:absolute before:left-0 before:top-[0.55em] before:h-[5px] before:w-[5px] before:rounded-full',
+                              isHighlight
+                                ? 'font-medium text-text-primary before:bg-accent-blue'
+                                : 'text-text-secondary before:bg-text-tertiary/30'
+                            )}
                           >
                             {detail}
                           </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ))}
+                        )
+                      })}
+                    </ul>
+                  )}
                 </div>
-              )}
-
-              {/* Flat details list (for other deliverables) */}
-              {deliverable.details && (
-                <ul className="flex flex-col gap-3">
-                  {deliverable.details.map((detail, j) => {
-                    const isHighlight =
-                      deliverable.highlightMatch && detail.includes(deliverable.highlightMatch)
-
-                    return (
-                      <li
-                        key={j}
-                        className={cn(
-                          'relative pl-5 text-body-sm leading-[1.75] before:absolute before:left-0 before:top-[0.55em] before:h-[5px] before:w-[5px] before:rounded-full',
-                          isHighlight
-                            ? 'font-medium text-text-primary before:bg-accent-blue'
-                            : 'text-text-secondary before:bg-text-tertiary/30'
-                        )}
-                      >
-                        {detail}
-                      </li>
-                    )
-                  })}
-                </ul>
-              )}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
 
       {/* Per-deliverable pricing strip */}
       {deliverable.pricing && (
