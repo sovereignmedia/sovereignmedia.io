@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -15,6 +15,20 @@ interface WorkLogProps {
 export function WorkLog({ entries }: WorkLogProps) {
   const [expanded, setExpanded] = useState(false)
   const count = entries.length
+
+  // Group entries by date, preserving order
+  const groupedEntries = useMemo(() => {
+    const groups: { date: string; entries: ProofOfWorkEntry[] }[] = []
+    for (const entry of entries) {
+      const last = groups[groups.length - 1]
+      if (last && last.date === entry.date) {
+        last.entries.push(entry)
+      } else {
+        groups.push({ date: entry.date, entries: [entry] })
+      }
+    }
+    return groups
+  }, [entries])
 
   return (
     <div>
@@ -66,36 +80,48 @@ export function WorkLog({ entries }: WorkLogProps) {
             className="overflow-hidden"
           >
             <div className="space-y-0 px-6 pb-6 pt-2 md:px-8">
-              {entries.map((entry, i) => (
-                <div
-                  key={entry.date + entry.title}
-                  className={cn(
-                    'relative border-l border-border-subtle pl-6',
-                    i < entries.length - 1 ? 'pb-6' : 'pb-0'
-                  )}
-                >
-                  <div className="absolute -left-[4px] top-1.5 h-2 w-2 rounded-full border-[1.5px] border-accent-blue bg-bg-primary" />
-                  <span className="font-mono text-label uppercase tracking-wider text-text-tertiary">
-                    {entry.date}
-                  </span>
-                  <h4 className="mt-1.5 text-body-sm font-medium text-text-primary">
-                    {entry.title}
-                  </h4>
-                  <p className="mt-1.5 text-body-sm leading-relaxed text-text-secondary">
-                    {entry.description}
-                  </p>
-                  {entry.tasks && entry.tasks.length > 0 && (
-                    <ul className="mt-3 space-y-2 pl-3">
-                      {entry.tasks.map((task, j) => (
-                        <li
-                          key={j}
-                          className="relative pl-4 text-xs leading-relaxed text-text-secondary/80 before:absolute before:left-0 before:top-[0.5em] before:h-[4px] before:w-[4px] before:rounded-full before:bg-text-tertiary/30"
-                        >
-                          {task}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
+              {groupedEntries.map((group, gi) => (
+                <div key={group.date + gi}>
+                  {/* Date header — shown once per group */}
+                  <div className="mb-4 mt-2 first:mt-0">
+                    <span className="font-mono text-label uppercase tracking-wider text-text-tertiary">
+                      {group.date}
+                    </span>
+                  </div>
+
+                  {/* Entries under this date */}
+                  {group.entries.map((entry, ei) => {
+                    const isLastEntry = gi === groupedEntries.length - 1 && ei === group.entries.length - 1
+                    return (
+                      <div
+                        key={entry.date + entry.title}
+                        className={cn(
+                          'relative border-l border-border-subtle pl-6',
+                          !isLastEntry ? 'pb-6' : 'pb-0'
+                        )}
+                      >
+                        <div className="absolute -left-[4px] top-1.5 h-2 w-2 rounded-full border-[1.5px] border-accent-blue bg-bg-primary" />
+                        <h4 className="text-body-sm font-medium text-text-primary">
+                          {entry.title}
+                        </h4>
+                        <p className="mt-1.5 text-body-sm leading-relaxed text-text-secondary">
+                          {entry.description}
+                        </p>
+                        {entry.tasks && entry.tasks.length > 0 && (
+                          <ul className="mt-3 space-y-2 pl-3">
+                            {entry.tasks.map((task, j) => (
+                              <li
+                                key={j}
+                                className="relative pl-4 text-xs leading-relaxed text-text-secondary/80 before:absolute before:left-0 before:top-[0.5em] before:h-[4px] before:w-[4px] before:rounded-full before:bg-text-tertiary/30"
+                              >
+                                {task}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    )
+                  })}
                 </div>
               ))}
             </div>
