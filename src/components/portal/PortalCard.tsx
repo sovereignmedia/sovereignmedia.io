@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown, ArrowRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { StatusBadge } from './StatusBadge'
 import { ProgressBar } from './ProgressBar'
@@ -164,6 +164,53 @@ export function PortalCard({ deliverable, index, workLogEntries = [] }: PortalCa
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Per-deliverable pricing strip */}
+      {deliverable.pricing && (
+        <div>
+          {/* Divider */}
+          <div
+            className="h-px w-full"
+            style={{
+              background:
+                'linear-gradient(to right, transparent, var(--color-border-subtle) 15%, var(--color-border-subtle) 85%, transparent)',
+            }}
+          />
+          <div className="px-6 py-5 md:px-8">
+            <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:gap-4">
+              <span
+                className="font-mono text-2xl font-semibold text-text-primary md:text-3xl"
+                style={{ textShadow: '0 0 30px rgba(255,255,255,0.08)' }}
+              >
+                {deliverable.pricing.price}
+              </span>
+              {deliverable.pricing.hours && (
+                <span className="font-mono text-body-sm text-text-tertiary">
+                  {deliverable.pricing.hours}
+                </span>
+              )}
+            </div>
+            {deliverable.pricing.description && (
+              <p className="mt-3 max-w-2xl text-body-sm text-text-tertiary">
+                {deliverable.pricing.description}
+              </p>
+            )}
+            {deliverable.pricing.invoiceUrl && (
+              <div className="mt-4 flex justify-start">
+                <a
+                  href={deliverable.pricing.invoiceUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-md bg-accent-blue px-4 py-2 font-mono text-xs font-medium text-white transition-all duration-300 hover:bg-accent-blue/85 hover:shadow-[0_0_20px_rgba(0,102,255,0.25)]"
+                >
+                  View Invoice
+                  <ArrowRight size={12} />
+                </a>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Work Log — integrated into card bottom */}
       <WorkLog entries={workLogEntries} />

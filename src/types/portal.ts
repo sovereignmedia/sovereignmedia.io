@@ -25,6 +25,13 @@ export interface Deliverable {
   details?: string[]
   /** Optional: highlight specific detail items (e.g. detail text containing "$2.5M") */
   highlightMatch?: string
+  /** Optional: per-deliverable pricing shown inline on the card */
+  pricing?: {
+    price: string
+    hours?: string
+    description?: string
+    invoiceUrl?: string
+  }
 }
 
 export interface ProofOfWorkEntry {

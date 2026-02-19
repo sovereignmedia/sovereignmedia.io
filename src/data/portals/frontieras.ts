@@ -23,6 +23,13 @@ export const frontierasPortal: PortalConfig = {
       status: 'In Development',
       progress: 20,
       progressLabel: 'Prototype Phase',
+      pricing: {
+        price: '$95,000',
+        hours: '310+ hours',
+        description:
+          'Strategization, development, coding, iteration, and deployment of both investor intelligence dashboards, plus strategic consulting, campaign optimization, and cross-functional coordination',
+        invoiceUrl: '#',
+      },
       subItems: [
         {
           title: 'Retail Investor Dashboard — The "Investor Dashboard"',
