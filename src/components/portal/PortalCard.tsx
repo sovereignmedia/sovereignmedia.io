@@ -204,9 +204,12 @@ export function PortalCard({ deliverable, index, workLogEntries = [] }: PortalCa
             }}
           />
           <div className="px-6 py-5 md:px-8">
-            <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:gap-4">
+            <span className="font-mono text-label uppercase tracking-[0.12em] text-text-secondary">
+              Investment & Pricing
+            </span>
+            <div className="mt-3 flex flex-col gap-1 sm:flex-row sm:items-baseline sm:gap-4">
               <span
-                className="font-mono text-2xl font-semibold text-text-primary md:text-3xl"
+                className="font-mono text-lg font-semibold text-text-primary md:text-xl"
                 style={{ textShadow: '0 0 30px rgba(255,255,255,0.08)' }}
               >
                 {deliverable.pricing.price}
