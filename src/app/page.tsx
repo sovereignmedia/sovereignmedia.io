@@ -249,6 +249,14 @@ function PasswordStage({ onSuccess }: { onSuccess: () => void }) {
           Submit
         </motion.button>
       </form>
+
+      {/* Dev bypass — remove when pages are finalized */}
+      <button
+        onClick={onSuccess}
+        className="absolute bottom-6 right-6 z-20 font-mono text-xs text-text-tertiary/30 transition-colors hover:text-text-tertiary"
+      >
+        dev bypass
+      </button>
     </motion.div>
   )
 }
