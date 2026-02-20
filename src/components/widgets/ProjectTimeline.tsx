@@ -72,7 +72,7 @@ const TIMELINE_MILESTONES: TimelineMilestone[] = [
     displayDate: 'September 2026',
     type: 'company-milestone',
     status: 'upcoming',
-    color: '#FFFFFF',
+    color: 'var(--color-success)',
   },
 ]
 
@@ -90,6 +90,7 @@ const MILESTONE_SIDE: Record<string, 'above' | 'below'> = {
 
 const CARD_W  = 152
 const CONN_H  = 32
+const CARD_GAP = 8 // minimum gap between same-side cards
 
 // ============================================
 // Helpers
@@ -128,6 +129,63 @@ function getMonthLabels() {
   return out
 }
 
+/**
+ * Resolve overlapping card positions for same-side milestones.
+ * Returns a map of milestone id -> adjusted CSS left value.
+ * Cards that would overlap are pushed apart symmetrically.
+ */
+function resolveOverlaps(
+  milestones: TimelineMilestone[],
+  containerWidthPx: number
+): Record<string, string> {
+  const result: Record<string, string> = {}
+  const half = CARD_W / 2
+
+  // Group by side
+  const groups: Record<string, { id: string; pos: number }[]> = { above: [], below: [] }
+  milestones.forEach((ms) => {
+    const side = MILESTONE_SIDE[ms.id] ?? 'above'
+    const pos = getPos(ms.date)
+    groups[side].push({ id: ms.id, pos })
+  })
+
+  for (const side of ['above', 'below'] as const) {
+    const items = groups[side].sort((a, b) => a.pos - b.pos)
+
+    // Convert % to px, then resolve overlaps left-to-right
+    const pxPositions = items.map((item) => {
+      const raw = (item.pos / 100) * containerWidthPx
+      return Math.max(half, Math.min(containerWidthPx - half, raw))
+    })
+
+    // Push overlapping cards to the right
+    for (let i = 1; i < pxPositions.length; i++) {
+      const minLeft = pxPositions[i - 1] + CARD_W + CARD_GAP
+      if (pxPositions[i] < minLeft) {
+        pxPositions[i] = minLeft
+      }
+    }
+
+    // Clamp right edge
+    for (let i = pxPositions.length - 1; i >= 0; i--) {
+      pxPositions[i] = Math.min(pxPositions[i], containerWidthPx - half)
+      if (i > 0) {
+        const maxRight = pxPositions[i] - CARD_W - CARD_GAP
+        if (pxPositions[i - 1] > maxRight) {
+          pxPositions[i - 1] = maxRight
+        }
+      }
+    }
+
+    // Convert back to CSS values
+    items.forEach((item, idx) => {
+      result[item.id] = `${pxPositions[idx]}px`
+    })
+  }
+
+  return result
+}
+
 const ease = [0.16, 1, 0.3, 1] as const
 
 // ============================================
@@ -147,14 +205,14 @@ const ease = [0.16, 1, 0.3, 1] as const
 
 function MilestoneColumn({
   ms,
-  pos,
+  leftValue,
   side,
   index,
   hovered,
   setHovered,
 }: {
   ms: TimelineMilestone
-  pos: number
+  leftValue: string
   side: 'above' | 'below'
   index: number
   hovered: string | null
@@ -164,15 +222,11 @@ function MilestoneColumn({
   const isComp = ms.status === 'completed'
   const color  = isComp ? 'var(--color-success)' : (ms.color ?? 'var(--color-accent-blue)')
 
-  // Use a NON-animated wrapper div for position + centering transform.
-  // The inner motion.div handles only opacity/y animation.
-  const clampX = `clamp(${CARD_W / 2}px, ${pos}%, calc(100% - ${CARD_W / 2}px))`
-
   return (
     <div
       className="absolute"
       style={{
-        left: clampX,
+        left: leftValue,
         transform: 'translateX(-50%)',
         ...(side === 'above' ? { bottom: '50%' } : { top: '50%' }),
         zIndex: 10,
@@ -272,21 +326,21 @@ function HorizontalTimeline() {
   const months = useMemo(getMonthLabels, [])
   const nowPos = useMemo(getNowPos, [])
 
+  // Resolve card overlaps at 960px (max-w-5xl minus 2*32px padding)
+  const cardPositions = useMemo(() => resolveOverlaps(TIMELINE_MILESTONES, 960), [])
+
   return (
     <div className="relative hidden md:block select-none">
       <div className="relative w-full" style={{ height: 300 }}>
 
-        {/* TRACK LINE at 50% */}
-        {/* Use a plain div wrapper for the transform, animate the inner */}
+        {/* TRACK LINE at 50% — extends fully from edge to edge */}
         <div
           className="absolute left-0 right-0"
           style={{ top: '50%', transform: 'translateY(-50%)', height: 2, zIndex: 2 }}
         >
           <motion.div
             className="h-full w-full"
-            style={{
-              background: 'linear-gradient(to right, transparent 0%, var(--color-border-default) 6%, var(--color-border-default) 94%, transparent 100%)',
-            }}
+            style={{ backgroundColor: 'var(--color-border-default)' }}
             initial={{ scaleX: 0, transformOrigin: 'left' }}
             whileInView={{ scaleX: 1 }}
             viewport={{ once: true }}
@@ -294,23 +348,40 @@ function HorizontalTimeline() {
           />
         </div>
 
-        {/* MONTH LABELS */}
+        {/* MONTH TICK MARKS + LABELS */}
         {months.map((m) => (
-          <span
-            key={m.label}
-            className="absolute font-mono text-[10px] tracking-wider text-text-tertiary"
-            style={{
-              left: `${m.pos}%`,
-              top: 'calc(50% + 14px)',
-              transform: 'translateX(-50%)',
-              zIndex: 3,
-            }}
-          >
-            {m.label}
-          </span>
+          <div key={m.label}>
+            {/* Tick mark */}
+            <div
+              className="absolute"
+              style={{
+                left: `${m.pos}%`,
+                top: '50%',
+                transform: 'translateX(-50%)',
+                width: 1,
+                height: 8,
+                marginTop: -4,
+                backgroundColor: 'var(--color-border-default)',
+                opacity: 0.6,
+                zIndex: 3,
+              }}
+            />
+            {/* Label */}
+            <span
+              className="absolute font-mono text-[10px] tracking-wider text-text-tertiary"
+              style={{
+                left: `${m.pos}%`,
+                top: 'calc(50% + 12px)',
+                transform: 'translateX(-50%)',
+                zIndex: 3,
+              }}
+            >
+              {m.label}
+            </span>
+          </div>
         ))}
 
-        {/* NOW INDICATOR — use wrapper div for transform */}
+        {/* NOW INDICATOR */}
         <div
           className="absolute"
           style={{ left: `${nowPos}%`, top: '50%', transform: 'translate(-50%, -50%)', zIndex: 30 }}
@@ -336,7 +407,7 @@ function HorizontalTimeline() {
           </span>
         </div>
 
-        {/* MILESTONE DOTS — wrapper div for transform, motion.div for animation */}
+        {/* MILESTONE DOTS */}
         {TIMELINE_MILESTONES.map((ms, i) => {
           const pos    = getPos(ms.date)
           const isHov  = hovered === ms.id
@@ -345,8 +416,8 @@ function HorizontalTimeline() {
           const isCo   = ms.type === 'company-milestone'
           const color  = isComp ? 'var(--color-success)' : (ms.color ?? 'var(--color-accent-blue)')
           const dotSize = isCo ? 12 : 9
-          const glowB  = isCo ? '0 0 10px rgba(255,255,255,0.2)' : isComp ? '0 0 10px rgba(0,204,102,0.4)' : '0 0 10px rgba(0,102,255,0.3)'
-          const glowH  = isCo ? '0 0 18px rgba(255,255,255,0.5)' : isComp ? '0 0 18px rgba(0,204,102,0.6)' : '0 0 18px rgba(0,102,255,0.5)'
+          const glowB  = isCo ? '0 0 10px rgba(0,204,102,0.3)' : isComp ? '0 0 10px rgba(0,204,102,0.4)' : '0 0 10px rgba(0,102,255,0.3)'
+          const glowH  = isCo ? '0 0 18px rgba(0,204,102,0.5)' : isComp ? '0 0 18px rgba(0,204,102,0.6)' : '0 0 18px rgba(0,102,255,0.5)'
 
           return (
             <div
@@ -385,13 +456,13 @@ function HorizontalTimeline() {
 
         {/* MILESTONE COLUMNS (card + connector) */}
         {TIMELINE_MILESTONES.map((ms, i) => {
-          const pos  = getPos(ms.date)
           const side = MILESTONE_SIDE[ms.id] ?? (i % 2 === 0 ? 'above' : 'below')
+          const leftValue = cardPositions[ms.id] ?? `${getPos(ms.date)}%`
           return (
             <MilestoneColumn
               key={`col-${ms.id}`}
               ms={ms}
-              pos={pos}
+              leftValue={leftValue}
               side={side}
               index={i}
               hovered={hovered}
