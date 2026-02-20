@@ -23,10 +23,7 @@ interface TimelineMilestone {
 }
 
 // ============================================
-// TIMELINE MILESTONES
-// When adding a new deliverable, add a timeline milestone here too.
-// Required: id, label, date, displayDate, type, status
-// Optional: description, color, linkedDeliverableId
+// TIMELINE MILESTONES — edit data here
 // ============================================
 
 const TIMELINE_RANGE = {
@@ -98,7 +95,6 @@ const easeOutExpo = [0.16, 1, 0.3, 1] as const
 // ============================================
 
 function parseMonth(dateStr: string): number {
-  // Handles "YYYY-MM" and "YYYY-MM-DD"
   const parts = dateStr.split('-')
   const year = parseInt(parts[0], 10)
   const month = parseInt(parts[1], 10)
@@ -134,96 +130,160 @@ function getMonthLabels(): { label: string; position: number }[] {
   let m = startMonth
   while (y < endYear || (y === endYear && m <= endMonth)) {
     const dateStr = `${y}-${String(m).padStart(2, '0')}`
-    months.push({
-      label: names[m - 1],
-      position: getPosition(dateStr),
-    })
+    months.push({ label: names[m - 1], position: getPosition(dateStr) })
     m++
     if (m > 12) { m = 1; y++ }
   }
   return months
 }
 
+// Assign each milestone a row: 'above' | 'below', with stagger for
+// milestones that are too close together on the same side.
+interface LayoutMilestone extends TimelineMilestone {
+  side: 'above' | 'below'
+  connectorHeight: number // px — so close milestones get taller connectors
+}
+
+function layoutMilestones(): LayoutMilestone[] {
+  // Manually assign sides to ensure no collisions given known data
+  const sides: Record<string, 'above' | 'below'> = {
+    'engagement-start': 'above',
+    'dashboards-complete': 'below',
+    '3d-animation': 'above',
+    'marketing-videos': 'below',
+    'ipo': 'above',
+  }
+
+  // Give taller connectors to milestones that share roughly the same x position
+  // so their cards don't overlap the track area
+  return TIMELINE_MILESTONES.map((ms) => ({
+    ...ms,
+    side: sides[ms.id] ?? (TIMELINE_MILESTONES.indexOf(ms) % 2 === 0 ? 'above' : 'below'),
+    connectorHeight: 28,
+  }))
+}
+
 // ============================================
-// Dot component — the milestone marker on the track
+// Label card component
 // ============================================
 
-function MilestoneDot({
-  milestone,
+const CARD_WIDTH = 148 // px — used for both card width and overlap detection
+
+function LabelCard({
+  ms,
   isHovered,
   onHover,
   onLeave,
+  side,
+  connectorHeight,
+  index,
 }: {
-  milestone: TimelineMilestone
+  ms: TimelineMilestone
   isHovered: boolean
   onHover: () => void
   onLeave: () => void
+  side: 'above' | 'below'
+  connectorHeight: number
+  index: number
 }) {
-  const isCompany = milestone.type === 'company-milestone'
-  const dotColor = milestone.color || 'var(--color-accent-blue)'
-  const isCompleted = milestone.status === 'completed'
-  const isInProgress = milestone.status === 'in-progress'
-  const size = isCompany ? 12 : 9
-
-  const baseGlow = isCompany
-    ? '0 0 12px rgba(255,255,255,0.3)'
-    : isCompleted
-      ? '0 0 12px rgba(0,204,102,0.4)'
-      : '0 0 12px rgba(0,102,255,0.3)'
-
-  const hoverGlow = isCompany
-    ? '0 0 20px rgba(255,255,255,0.5)'
-    : isCompleted
-      ? '0 0 20px rgba(0,204,102,0.6)'
-      : '0 0 20px rgba(0,102,255,0.5)'
-
-  const fillColor = isCompleted ? 'var(--color-success)' : dotColor
+  const pos = getPosition(ms.date)
+  const dotColor =
+    ms.status === 'completed'
+      ? 'var(--color-success)'
+      : ms.color || 'var(--color-accent-blue)'
 
   return (
     <motion.div
-      className="absolute top-1/2 z-20 cursor-pointer"
+      className="absolute"
       style={{
-        left: `${getPosition(milestone.date)}%`,
-        transform: 'translate(-50%, -50%)',
+        left: `${pos}%`,
+        // For 'above': card sits above track. For 'below': card sits below track.
+        // The parent container has the track at its vertical center.
+        // We use bottom/top offsets from the center.
+        ...(side === 'above'
+          ? { bottom: 0, transform: 'translateX(-50%)' }
+          : { top: 0, transform: 'translateX(-50%)' }),
       }}
+      initial={{ opacity: 0, y: side === 'above' ? 12 : -12 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.6, delay: 0.2 + index * 0.1, ease: easeOutExpo }}
       onMouseEnter={onHover}
       onMouseLeave={onLeave}
-      initial={{ scale: 0, opacity: 0 }}
-      whileInView={{ scale: 1, opacity: 1 }}
-      viewport={{ once: true }}
     >
-      {isInProgress ? (
-        <motion.div
-          style={{
-            width: size,
-            height: size,
-            borderRadius: '50%',
-            backgroundColor: fillColor,
-            border: 'none',
-          }}
-          animate={{
-            boxShadow: isHovered
-              ? [hoverGlow, hoverGlow, hoverGlow]
-              : [baseGlow, hoverGlow, baseGlow],
-          }}
-          transition={{
-            duration: 3,
-            repeat: Infinity,
-            ease: easeOutExpo,
-          }}
-        />
+      {side === 'above' ? (
+        // Above: card → connector → track
+        <>
+          <div
+            className={cn(
+              'rounded-md border px-3 py-2.5 text-center transition-all duration-300',
+              isHovered ? 'border-border-hover bg-bg-card-hover' : 'border-border-subtle bg-white/[0.02]'
+            )}
+            style={{ width: CARD_WIDTH }}
+          >
+            <div className="flex items-center justify-center gap-1.5">
+              <div className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: dotColor }} />
+              <span className="text-xs font-medium leading-snug text-text-primary">{ms.label}</span>
+            </div>
+            <span className="mt-1 block font-mono text-[10px] text-text-tertiary">{ms.displayDate}</span>
+            {isHovered && ms.description && (
+              <motion.p
+                className="mt-1.5 text-[10px] leading-relaxed text-text-secondary"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.25 }}
+              >
+                {ms.description}
+              </motion.p>
+            )}
+          </div>
+          {/* Connector */}
+          <div
+            className="mx-auto w-px"
+            style={{
+              height: connectorHeight,
+              backgroundColor: dotColor,
+              opacity: isHovered ? 0.5 : 0.2,
+              transition: 'opacity 0.3s ease',
+            }}
+          />
+        </>
       ) : (
-        <div
-          style={{
-            width: size,
-            height: size,
-            borderRadius: '50%',
-            backgroundColor: milestone.status === 'upcoming' ? 'transparent' : fillColor,
-            border: milestone.status === 'upcoming' ? `1.5px solid ${dotColor}` : 'none',
-            boxShadow: isHovered ? hoverGlow : baseGlow,
-            transition: 'box-shadow 0.3s cubic-bezier(0.16,1,0.3,1)',
-          }}
-        />
+        // Below: track → connector → card
+        <>
+          <div
+            className="mx-auto w-px"
+            style={{
+              height: connectorHeight,
+              backgroundColor: dotColor,
+              opacity: isHovered ? 0.5 : 0.2,
+              transition: 'opacity 0.3s ease',
+            }}
+          />
+          <div
+            className={cn(
+              'rounded-md border px-3 py-2.5 text-center transition-all duration-300',
+              isHovered ? 'border-border-hover bg-bg-card-hover' : 'border-border-subtle bg-white/[0.02]'
+            )}
+            style={{ width: CARD_WIDTH }}
+          >
+            <div className="flex items-center justify-center gap-1.5">
+              <div className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: dotColor }} />
+              <span className="text-xs font-medium leading-snug text-text-primary">{ms.label}</span>
+            </div>
+            <span className="mt-1 block font-mono text-[10px] text-text-tertiary">{ms.displayDate}</span>
+            {isHovered && ms.description && (
+              <motion.p
+                className="mt-1.5 text-[10px] leading-relaxed text-text-secondary"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.25 }}
+              >
+                {ms.description}
+              </motion.p>
+            )}
+          </div>
+        </>
       )}
     </motion.div>
   )
@@ -233,103 +293,61 @@ function MilestoneDot({
 // Desktop Horizontal Timeline
 // ============================================
 
+// Heights (px)
+const LABEL_AREA_H = 110 // height of the above-label area
+const TRACK_H = 2        // height of the track bar
+const BELOW_H = 110      // height of the below-label area (below month labels)
+const MONTH_ROW_H = 20   // height of month label row
+
 function HorizontalTimeline() {
   const [hoveredId, setHoveredId] = useState<string | null>(null)
   const months = useMemo(() => getMonthLabels(), [])
   const nowPos = useMemo(() => getNowPosition(), [])
+  const laid = useMemo(() => layoutMilestones(), [])
+
+  const above = laid.filter((m) => m.side === 'above')
+  const below = laid.filter((m) => m.side === 'below')
 
   return (
-    <div className="relative hidden md:block">
-      {/* Subtle atmospheric glow behind the timeline */}
+    <div className="relative hidden md:block select-none">
+      {/* Atmospheric glow */}
       <div
-        className="pointer-events-none absolute inset-0 -top-20 -bottom-20"
+        className="pointer-events-none absolute inset-0"
         style={{
           background:
-            'radial-gradient(ellipse 80% 40% at 50% 50%, rgba(0,102,255,0.03) 0%, transparent 70%)',
+            'radial-gradient(ellipse 80% 50% at 50% 50%, rgba(0,102,255,0.03) 0%, transparent 70%)',
         }}
       />
 
-      {/* Labels area — above the track */}
-      <div className="relative mb-16" style={{ height: 120 }}>
-        {TIMELINE_MILESTONES.map((ms, i) => {
-          const pos = getPosition(ms.date)
-          const above = i % 2 === 0
-          const isHovered = hoveredId === ms.id
-          const dotColor = ms.status === 'completed'
-            ? 'var(--color-success)'
-            : ms.color || 'var(--color-accent-blue)'
-
-          if (!above) return null
-
-          return (
-            <motion.div
-              key={ms.id}
-              className="absolute"
-              style={{
-                left: `${pos}%`,
-                bottom: 0,
-                transform: 'translateX(-50%)',
-              }}
-              initial={{ opacity: 0, y: 10 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.3 + i * 0.12, ease: easeOutExpo }}
-              onMouseEnter={() => setHoveredId(ms.id)}
-              onMouseLeave={() => setHoveredId(null)}
-            >
-              {/* Connector line */}
-              <div
-                className="mx-auto mb-0 w-px"
-                style={{
-                  height: 24,
-                  backgroundColor: dotColor,
-                  opacity: isHovered ? 0.6 : 0.25,
-                  transition: 'opacity 0.3s ease',
-                }}
-              />
-              {/* Label card */}
-              <div
-                className={cn(
-                  'w-40 rounded-md border px-3 py-2.5 text-center transition-all duration-300',
-                  isHovered ? 'border-border-hover bg-bg-card-hover' : 'border-border-subtle bg-white/[0.015]'
-                )}
-              >
-                <div className="flex items-center justify-center gap-1.5">
-                  <div
-                    className="h-1.5 w-1.5 shrink-0 rounded-full"
-                    style={{ backgroundColor: dotColor }}
-                  />
-                  <span className="text-xs font-medium leading-tight text-text-primary">
-                    {ms.label}
-                  </span>
-                </div>
-                <span className="mt-1 block font-mono text-[10px] text-text-tertiary">
-                  {ms.displayDate}
-                </span>
-                {isHovered && ms.description && (
-                  <motion.p
-                    className="mt-1.5 text-[10px] leading-relaxed text-text-secondary"
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    transition={{ duration: 0.3, ease: easeOutExpo }}
-                  >
-                    {ms.description}
-                  </motion.p>
-                )}
-              </div>
-            </motion.div>
-          )
-        })}
+      {/* ── ABOVE LABELS ────────────────────────────── */}
+      {/* Positioned relative container; cards anchor bottom: 0 so connector meets track */}
+      <div className="relative" style={{ height: LABEL_AREA_H }}>
+        {above.map((ms, i) => (
+          <LabelCard
+            key={ms.id}
+            ms={ms}
+            isHovered={hoveredId === ms.id}
+            onHover={() => setHoveredId(ms.id)}
+            onLeave={() => setHoveredId(null)}
+            side="above"
+            connectorHeight={ms.connectorHeight}
+            index={i}
+          />
+        ))}
       </div>
 
-      {/* Track */}
-      <div className="relative h-[2px]">
-        {/* Track line — draws in from left to right */}
+      {/* ── TRACK ───────────────────────────────────── */}
+      <div className="relative" style={{ height: TRACK_H + 24 }}>
+        {/* The actual line */}
         <motion.div
-          className="absolute inset-y-0 left-0 right-0"
+          className="absolute"
           style={{
+            top: 12,
+            left: 0,
+            right: 0,
+            height: TRACK_H,
             background:
-              'linear-gradient(to right, transparent 2%, var(--color-border-default) 10%, var(--color-border-default) 90%, transparent 98%)',
+              'linear-gradient(to right, transparent 1%, var(--color-border-default) 8%, var(--color-border-default) 92%, transparent 99%)',
           }}
           initial={{ scaleX: 0, transformOrigin: 'left' }}
           whileInView={{ scaleX: 1 }}
@@ -337,18 +355,18 @@ function HorizontalTimeline() {
           transition={{ duration: 1.2, ease: easeOutExpo }}
         />
 
-        {/* Now indicator */}
+        {/* NOW indicator */}
         <motion.div
           className="absolute z-30"
           style={{
             left: `${nowPos}%`,
-            top: '50%',
+            top: 12,
             transform: 'translate(-50%, -50%)',
           }}
           initial={{ opacity: 0, scale: 0 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.8, ease: easeOutExpo }}
+          transition={{ duration: 0.5, delay: 0.9, ease: easeOutExpo }}
         >
           <motion.div
             className="h-3 w-3 rotate-45 rounded-sm"
@@ -356,125 +374,124 @@ function HorizontalTimeline() {
             animate={{
               boxShadow: [
                 '0 0 8px rgba(0,102,255,0.3)',
-                '0 0 16px rgba(0,102,255,0.5)',
+                '0 0 18px rgba(0,102,255,0.55)',
                 '0 0 8px rgba(0,102,255,0.3)',
               ],
             }}
-            transition={{ duration: 3, repeat: Infinity, ease: easeOutExpo }}
+            transition={{ duration: 2.5, repeat: Infinity, ease: easeOutExpo }}
           />
           <span
-            className="absolute -top-5 left-1/2 -translate-x-1/2 font-mono text-[9px] font-semibold tracking-[0.15em] text-accent-blue"
-            style={{ textShadow: '0 0 8px rgba(0,102,255,0.4)' }}
+            className="absolute font-mono text-[9px] font-semibold tracking-[0.15em] text-accent-blue"
+            style={{
+              top: -18,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              textShadow: '0 0 8px rgba(0,102,255,0.4)',
+            }}
           >
             NOW
           </span>
         </motion.div>
 
         {/* Milestone dots */}
-        {TIMELINE_MILESTONES.map((ms, i) => (
-          <motion.div
-            key={ms.id}
-            initial={{ scale: 0, opacity: 0 }}
-            whileInView={{ scale: 1, opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.4, delay: 0.4 + i * 0.15, ease: easeOutExpo }}
-            className="contents"
-          >
-            <MilestoneDot
-              milestone={ms}
-              isHovered={hoveredId === ms.id}
-              onHover={() => setHoveredId(ms.id)}
-              onLeave={() => setHoveredId(null)}
-            />
-          </motion.div>
-        ))}
-      </div>
-
-      {/* Labels area — below the track */}
-      <div className="relative mt-2" style={{ height: 120 }}>
-        {/* Month labels */}
-        <div className="relative mb-4 h-5">
-          {months.map((month) => (
-            <span
-              key={month.label}
-              className="absolute -translate-x-1/2 font-mono text-[10px] uppercase tracking-wider text-text-tertiary"
-              style={{ left: `${month.position}%` }}
-            >
-              {month.label}
-            </span>
-          ))}
-        </div>
-
-        {/* Below-track milestone labels */}
-        {TIMELINE_MILESTONES.map((ms, i) => {
-          const pos = getPosition(ms.date)
-          const above = i % 2 === 0
+        {laid.map((ms, i) => {
+          const isCompany = ms.type === 'company-milestone'
+          const isCompleted = ms.status === 'completed'
+          const isInProgress = ms.status === 'in-progress'
           const isHovered = hoveredId === ms.id
-          const dotColor = ms.status === 'completed'
-            ? 'var(--color-success)'
-            : ms.color || 'var(--color-accent-blue)'
-
-          if (above) return null
+          const dotColor =
+            ms.status === 'completed'
+              ? 'var(--color-success)'
+              : ms.color || 'var(--color-accent-blue)'
+          const size = isCompany ? 12 : 9
+          const glowBase = isCompany
+            ? '0 0 10px rgba(255,255,255,0.25)'
+            : isCompleted
+              ? '0 0 10px rgba(0,204,102,0.4)'
+              : '0 0 10px rgba(0,102,255,0.3)'
+          const glowHover = isCompany
+            ? '0 0 18px rgba(255,255,255,0.5)'
+            : isCompleted
+              ? '0 0 18px rgba(0,204,102,0.6)'
+              : '0 0 18px rgba(0,102,255,0.5)'
 
           return (
             <motion.div
               key={ms.id}
-              className="absolute"
+              className="absolute z-20 cursor-pointer"
               style={{
-                left: `${pos}%`,
-                top: 28,
-                transform: 'translateX(-50%)',
+                left: `${getPosition(ms.date)}%`,
+                top: 12,
+                transform: 'translate(-50%, -50%)',
               }}
-              initial={{ opacity: 0, y: -10 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              initial={{ scale: 0, opacity: 0 }}
+              whileInView={{ scale: 1, opacity: 1 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.3 + i * 0.12, ease: easeOutExpo }}
+              transition={{ duration: 0.4, delay: 0.35 + i * 0.12, ease: easeOutExpo }}
               onMouseEnter={() => setHoveredId(ms.id)}
               onMouseLeave={() => setHoveredId(null)}
             >
-              {/* Connector line */}
-              <div
-                className="mx-auto mb-0 w-px"
-                style={{
-                  height: 24,
-                  backgroundColor: dotColor,
-                  opacity: isHovered ? 0.6 : 0.25,
-                  transition: 'opacity 0.3s ease',
-                }}
-              />
-              {/* Label card */}
-              <div
-                className={cn(
-                  'w-40 rounded-md border px-3 py-2.5 text-center transition-all duration-300',
-                  isHovered ? 'border-border-hover bg-bg-card-hover' : 'border-border-subtle bg-white/[0.015]'
-                )}
-              >
-                <div className="flex items-center justify-center gap-1.5">
-                  <div
-                    className="h-1.5 w-1.5 shrink-0 rounded-full"
-                    style={{ backgroundColor: dotColor }}
-                  />
-                  <span className="text-xs font-medium leading-tight text-text-primary">
-                    {ms.label}
-                  </span>
-                </div>
-                <span className="mt-1 block font-mono text-[10px] text-text-tertiary">
-                  {ms.displayDate}
-                </span>
-                {isHovered && ms.description && (
-                  <motion.p
-                    className="mt-1.5 text-[10px] leading-relaxed text-text-secondary"
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    transition={{ duration: 0.3, ease: easeOutExpo }}
-                  >
-                    {ms.description}
-                  </motion.p>
-                )}
-              </div>
+              {isInProgress ? (
+                <motion.div
+                  style={{
+                    width: size,
+                    height: size,
+                    borderRadius: '50%',
+                    backgroundColor: dotColor,
+                  }}
+                  animate={{
+                    boxShadow: isHovered
+                      ? [glowHover, glowHover, glowHover]
+                      : [glowBase, glowHover, glowBase],
+                  }}
+                  transition={{ duration: 2.5, repeat: Infinity, ease: easeOutExpo }}
+                />
+              ) : (
+                <div
+                  style={{
+                    width: size,
+                    height: size,
+                    borderRadius: '50%',
+                    backgroundColor: ms.status === 'upcoming' ? 'transparent' : dotColor,
+                    border: ms.status === 'upcoming' ? `1.5px solid ${dotColor}` : 'none',
+                    boxShadow: isHovered ? glowHover : glowBase,
+                    transition: 'box-shadow 0.3s cubic-bezier(0.16,1,0.3,1)',
+                  }}
+                />
+              )}
             </motion.div>
           )
         })}
+      </div>
+
+      {/* ── MONTH LABELS ────────────────────────────── */}
+      <div className="relative" style={{ height: MONTH_ROW_H }}>
+        {months.map((month) => (
+          <span
+            key={month.label}
+            className="absolute font-mono text-[10px] uppercase tracking-wider text-text-tertiary"
+            style={{ left: `${month.position}%`, top: 4, transform: 'translateX(-50%)' }}
+          >
+            {month.label}
+          </span>
+        ))}
+      </div>
+
+      {/* ── BELOW LABELS ────────────────────────────── */}
+      {/* Cards anchor top: 0 so connector starts right at top of this area */}
+      <div className="relative" style={{ height: BELOW_H }}>
+        {below.map((ms, i) => (
+          <LabelCard
+            key={ms.id}
+            ms={ms}
+            isHovered={hoveredId === ms.id}
+            onHover={() => setHoveredId(ms.id)}
+            onLeave={() => setHoveredId(null)}
+            side="below"
+            connectorHeight={ms.connectorHeight}
+            index={i}
+          />
+        ))}
       </div>
     </div>
   )
@@ -488,7 +505,6 @@ function VerticalTimeline() {
   const [hoveredId, setHoveredId] = useState<string | null>(null)
   const nowPos = useMemo(() => getNowPosition(), [])
 
-  // Sort milestones by date for vertical layout
   const sorted = useMemo(
     () => [...TIMELINE_MILESTONES].sort((a, b) => parseMonth(a.date) - parseMonth(b.date)),
     []
@@ -496,10 +512,11 @@ function VerticalTimeline() {
 
   return (
     <div className="relative block md:hidden">
-      {/* Vertical track line */}
+      {/* Vertical track */}
       <motion.div
-        className="absolute left-3 top-0 bottom-0 w-px"
+        className="absolute top-0 bottom-0 w-px"
         style={{
+          left: 6,
           background:
             'linear-gradient(to bottom, transparent 0%, var(--color-border-default) 5%, var(--color-border-default) 95%, transparent 100%)',
         }}
@@ -509,8 +526,7 @@ function VerticalTimeline() {
         transition={{ duration: 1, ease: easeOutExpo }}
       />
 
-      {/* Milestones */}
-      <div className="space-y-6">
+      <div className="space-y-6 pl-10">
         {sorted.map((ms, i) => {
           const isCompany = ms.type === 'company-milestone'
           const isCompleted = ms.status === 'completed'
@@ -521,7 +537,6 @@ function VerticalTimeline() {
             : ms.color || 'var(--color-accent-blue)'
           const dotSize = isCompany ? 10 : 8
 
-          // Check if this is roughly where "now" is
           const msPos = getPosition(ms.date)
           const nextMs = sorted[i + 1]
           const nextPos = nextMs ? getPosition(nextMs.date) : 100
@@ -530,38 +545,33 @@ function VerticalTimeline() {
           return (
             <div key={ms.id}>
               <motion.div
-                className="relative flex items-start gap-4 pl-8"
-                initial={{ opacity: 0, x: -12 }}
+                className="relative"
+                initial={{ opacity: 0, x: -10 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: i * 0.1, ease: easeOutExpo }}
                 onMouseEnter={() => setHoveredId(ms.id)}
                 onMouseLeave={() => setHoveredId(null)}
               >
-                {/* Dot */}
+                {/* Dot on the track */}
                 <div
-                  className="absolute left-0"
+                  className="absolute"
                   style={{
                     top: 4,
-                    left: 3 - dotSize / 2,
+                    left: -(10 + dotSize / 2),
                   }}
                 >
                   {isInProgress ? (
                     <motion.div
-                      style={{
-                        width: dotSize,
-                        height: dotSize,
-                        borderRadius: '50%',
-                        backgroundColor: dotColor,
-                      }}
+                      style={{ width: dotSize, height: dotSize, borderRadius: '50%', backgroundColor: dotColor }}
                       animate={{
                         boxShadow: [
-                          `0 0 8px ${dotColor}40`,
-                          `0 0 16px ${dotColor}70`,
-                          `0 0 8px ${dotColor}40`,
+                          `0 0 8px rgba(0,102,255,0.3)`,
+                          `0 0 16px rgba(0,102,255,0.55)`,
+                          `0 0 8px rgba(0,102,255,0.3)`,
                         ],
                       }}
-                      transition={{ duration: 3, repeat: Infinity, ease: easeOutExpo }}
+                      transition={{ duration: 2.5, repeat: Infinity, ease: easeOutExpo }}
                     />
                   ) : (
                     <div
@@ -571,53 +581,41 @@ function VerticalTimeline() {
                         borderRadius: '50%',
                         backgroundColor: ms.status === 'upcoming' ? 'transparent' : dotColor,
                         border: ms.status === 'upcoming' ? `1.5px solid ${dotColor}` : 'none',
-                        boxShadow: `0 0 8px ${dotColor}30`,
+                        boxShadow: `0 0 8px rgba(0,102,255,0.25)`,
                       }}
                     />
                   )}
                 </div>
 
-                {/* Content */}
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-text-primary">
-                      {ms.label}
-                    </span>
-                  </div>
-                  <span className="mt-0.5 block font-mono text-[10px] text-text-tertiary">
-                    {ms.displayDate}
-                  </span>
-                  {ms.description && (
-                    <p className="mt-1 text-xs leading-relaxed text-text-secondary">
-                      {ms.description}
-                    </p>
-                  )}
-                </div>
+                <span className="text-sm font-medium text-text-primary">{ms.label}</span>
+                <span className="mt-0.5 block font-mono text-[10px] text-text-tertiary">{ms.displayDate}</span>
+                {ms.description && (
+                  <p className="mt-1 text-xs leading-relaxed text-text-secondary">{ms.description}</p>
+                )}
               </motion.div>
 
-              {/* NOW indicator — between milestones */}
               {showNow && (
                 <motion.div
-                  className="relative my-4 flex items-center gap-3 pl-0"
+                  className="my-4 flex items-center gap-3"
                   initial={{ opacity: 0 }}
                   whileInView={{ opacity: 1 }}
                   viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: 0.6, ease: easeOutExpo }}
+                  transition={{ duration: 0.5, delay: 0.5, ease: easeOutExpo }}
                 >
                   <motion.div
                     className="h-2.5 w-2.5 rotate-45 rounded-sm"
                     style={{
                       backgroundColor: 'var(--color-accent-blue)',
-                      marginLeft: 3 - 5,
+                      marginLeft: -4,
                     }}
                     animate={{
                       boxShadow: [
                         '0 0 6px rgba(0,102,255,0.3)',
-                        '0 0 12px rgba(0,102,255,0.5)',
+                        '0 0 12px rgba(0,102,255,0.55)',
                         '0 0 6px rgba(0,102,255,0.3)',
                       ],
                     }}
-                    transition={{ duration: 3, repeat: Infinity, ease: easeOutExpo }}
+                    transition={{ duration: 2.5, repeat: Infinity, ease: easeOutExpo }}
                   />
                   <span className="font-mono text-[9px] font-semibold tracking-[0.15em] text-accent-blue">
                     NOW
