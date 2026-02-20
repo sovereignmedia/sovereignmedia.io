@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
@@ -89,8 +89,8 @@ const MILESTONE_SIDE: Record<string, 'above' | 'below'> = {
 // ============================================
 
 const CARD_W  = 152
-const CONN_H  = 32
-const CARD_GAP = 8 // minimum gap between same-side cards
+const CONN_H  = 32   // vertical connector height (used when card aligns with dot)
+const CARD_GAP = 8
 
 // ============================================
 // Helpers
@@ -131,17 +131,15 @@ function getMonthLabels() {
 
 /**
  * Resolve overlapping card positions for same-side milestones.
- * Returns a map of milestone id -> adjusted CSS left value.
- * Cards that would overlap are pushed apart symmetrically.
+ * Returns a map of milestone id -> px center position.
  */
 function resolveOverlaps(
   milestones: TimelineMilestone[],
   containerWidthPx: number
-): Record<string, string> {
-  const result: Record<string, string> = {}
+): Record<string, number> {
+  const result: Record<string, number> = {}
   const half = CARD_W / 2
 
-  // Group by side
   const groups: Record<string, { id: string; pos: number }[]> = { above: [], below: [] }
   milestones.forEach((ms) => {
     const side = MILESTONE_SIDE[ms.id] ?? 'above'
@@ -151,14 +149,11 @@ function resolveOverlaps(
 
   for (const side of ['above', 'below'] as const) {
     const items = groups[side].sort((a, b) => a.pos - b.pos)
-
-    // Convert % to px, then resolve overlaps left-to-right
     const pxPositions = items.map((item) => {
       const raw = (item.pos / 100) * containerWidthPx
       return Math.max(half, Math.min(containerWidthPx - half, raw))
     })
 
-    // Push overlapping cards to the right
     for (let i = 1; i < pxPositions.length; i++) {
       const minLeft = pxPositions[i - 1] + CARD_W + CARD_GAP
       if (pxPositions[i] < minLeft) {
@@ -166,7 +161,6 @@ function resolveOverlaps(
       }
     }
 
-    // Clamp right edge
     for (let i = pxPositions.length - 1; i >= 0; i--) {
       pxPositions[i] = Math.min(pxPositions[i], containerWidthPx - half)
       if (i > 0) {
@@ -177,145 +171,34 @@ function resolveOverlaps(
       }
     }
 
-    // Convert back to CSS values
     items.forEach((item, idx) => {
-      result[item.id] = `${pxPositions[idx]}px`
+      result[item.id] = pxPositions[idx]
     })
   }
 
   return result
 }
 
+/**
+ * Get chronological order index for sequential animation.
+ * Sorted by date, returns a map of id -> chronological index.
+ */
+function getChronoOrder(milestones: TimelineMilestone[]): Record<string, number> {
+  const sorted = [...milestones].sort((a, b) => parseMonth(a.date) - parseMonth(b.date))
+  const result: Record<string, number> = {}
+  sorted.forEach((ms, i) => { result[ms.id] = i })
+  return result
+}
+
 const ease = [0.16, 1, 0.3, 1] as const
 
-// ============================================
-// IMPORTANT: Framer Motion overrides CSS transforms
-// on animated elements. After animation completes,
-// transform resets to 'none', wiping out any
-// translateX(-50%) we set via style prop.
-//
-// Solution: NEVER use CSS transform for positioning
-// on motion.div elements. Instead, use calc() in
-// left/top, or use a wrapper <div> for the transform.
-// ============================================
-
-// ============================================
-// Milestone card + connector column
-// ============================================
-
-function MilestoneColumn({
-  ms,
-  leftValue,
-  side,
-  index,
-  hovered,
-  setHovered,
-}: {
-  ms: TimelineMilestone
-  leftValue: string
-  side: 'above' | 'below'
-  index: number
-  hovered: string | null
-  setHovered: (id: string | null) => void
-}) {
-  const isHov  = hovered === ms.id
-  const isComp = ms.status === 'completed'
-  const color  = isComp ? 'var(--color-success)' : (ms.color ?? 'var(--color-accent-blue)')
-
-  return (
-    <div
-      className="absolute"
-      style={{
-        left: leftValue,
-        transform: 'translateX(-50%)',
-        ...(side === 'above' ? { bottom: '50%' } : { top: '50%' }),
-        zIndex: 10,
-      }}
-    >
-      <motion.div
-        className="flex flex-col items-center"
-        initial={{ opacity: 0, y: side === 'above' ? 8 : -8 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.5, delay: 0.2 + index * 0.1, ease }}
-        onMouseEnter={() => setHovered(ms.id)}
-        onMouseLeave={() => setHovered(null)}
-      >
-        {side === 'above' ? (
-          <>
-            <div
-              className={cn(
-                'cursor-pointer rounded-md border px-3 py-2.5 text-center transition-colors duration-200',
-                isHov ? 'border-border-hover bg-bg-card-hover' : 'border-border-subtle bg-white/[0.02]'
-              )}
-              style={{ width: CARD_W }}
-            >
-              <div className="flex items-center justify-center gap-1.5">
-                <div className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: color }} />
-                <span className="text-xs font-medium leading-snug text-text-primary">{ms.label}</span>
-              </div>
-              <span className="mt-1 block font-mono text-[10px] text-text-tertiary">{ms.displayDate}</span>
-              {isHov && ms.description && (
-                <motion.p
-                  className="mt-1.5 text-[10px] leading-relaxed text-text-secondary"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  {ms.description}
-                </motion.p>
-              )}
-            </div>
-            <div
-              style={{
-                width: 1,
-                height: CONN_H,
-                backgroundColor: color,
-                opacity: isHov ? 0.5 : 0.2,
-                transition: 'opacity 0.2s ease',
-              }}
-            />
-          </>
-        ) : (
-          <>
-            <div
-              style={{
-                width: 1,
-                height: CONN_H,
-                backgroundColor: color,
-                opacity: isHov ? 0.5 : 0.2,
-                transition: 'opacity 0.2s ease',
-              }}
-            />
-            <div
-              className={cn(
-                'cursor-pointer rounded-md border px-3 py-2.5 text-center transition-colors duration-200',
-                isHov ? 'border-border-hover bg-bg-card-hover' : 'border-border-subtle bg-white/[0.02]'
-              )}
-              style={{ width: CARD_W }}
-            >
-              <div className="flex items-center justify-center gap-1.5">
-                <div className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: color }} />
-                <span className="text-xs font-medium leading-snug text-text-primary">{ms.label}</span>
-              </div>
-              <span className="mt-1 block font-mono text-[10px] text-text-tertiary">{ms.displayDate}</span>
-              {isHov && ms.description && (
-                <motion.p
-                  className="mt-1.5 text-[10px] leading-relaxed text-text-secondary"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  {ms.description}
-                </motion.p>
-              )}
-            </div>
-          </>
-        )}
-      </motion.div>
-    </div>
-  )
-}
+// Animation timing
+const TRACK_ANIM_DURATION = 1.0     // track line draws in
+const TICK_START = 0.4              // ticks start appearing during track animation
+const TICK_STAGGER = 0.03           // stagger between each month tick
+const MILESTONE_START = 0.8         // first milestone appears after track
+const MILESTONE_STAGGER = 0.2       // stagger between milestones (chronological)
+const NOW_EXTRA_DELAY = 0.3         // NOW appears after last milestone
 
 // ============================================
 // Desktop Horizontal Timeline
@@ -325,15 +208,29 @@ function HorizontalTimeline() {
   const [hovered, setHovered] = useState<string | null>(null)
   const months = useMemo(getMonthLabels, [])
   const nowPos = useMemo(getNowPos, [])
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [containerWidth, setContainerWidth] = useState(960)
 
-  // Resolve card overlaps at 960px (max-w-5xl minus 2*32px padding)
-  const cardPositions = useMemo(() => resolveOverlaps(TIMELINE_MILESTONES, 960), [])
+  useEffect(() => {
+    const el = containerRef.current
+    if (!el) return
+    const update = () => setContainerWidth(el.offsetWidth)
+    update()
+    const ro = new ResizeObserver(update)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
+
+  const cardPositions = useMemo(() => resolveOverlaps(TIMELINE_MILESTONES, containerWidth), [containerWidth])
+  const chronoOrder = useMemo(() => getChronoOrder(TIMELINE_MILESTONES), [])
+  const milestoneCount = TIMELINE_MILESTONES.length
+  const nowDelay = MILESTONE_START + milestoneCount * MILESTONE_STAGGER + NOW_EXTRA_DELAY
 
   return (
     <div className="relative hidden md:block select-none">
-      <div className="relative w-full" style={{ height: 300 }}>
+      <div ref={containerRef} className="relative w-full" style={{ height: 300 }}>
 
-        {/* TRACK LINE at 50% — extends fully from edge to edge */}
+        {/* TRACK LINE at 50% */}
         <div
           className="absolute left-0 right-0"
           style={{ top: '50%', transform: 'translateY(-50%)', height: 2, zIndex: 2 }}
@@ -344,30 +241,34 @@ function HorizontalTimeline() {
             initial={{ scaleX: 0, transformOrigin: 'left' }}
             whileInView={{ scaleX: 1 }}
             viewport={{ once: true }}
-            transition={{ duration: 1.2, ease }}
+            transition={{ duration: TRACK_ANIM_DURATION, ease }}
           />
         </div>
 
-        {/* MONTH TICK MARKS + LABELS */}
-        {months.map((m) => (
+        {/* MONTH TICK MARKS + LABELS — appear sequentially left to right */}
+        {months.map((m, mi) => (
           <div key={m.label}>
             {/* Tick mark */}
-            <div
+            <motion.div
               className="absolute"
               style={{
                 left: `${m.pos}%`,
                 top: '50%',
                 transform: 'translateX(-50%)',
-                width: 1,
-                height: 8,
-                marginTop: -4,
-                backgroundColor: 'var(--color-border-default)',
-                opacity: 0.6,
+                width: 1.5,
+                height: 14,
+                marginTop: -7,
+                backgroundColor: 'var(--color-text-tertiary)',
+                opacity: 0.5,
                 zIndex: 3,
               }}
+              initial={{ opacity: 0, scaleY: 0 }}
+              whileInView={{ opacity: 0.5, scaleY: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.3, delay: TICK_START + mi * TICK_STAGGER, ease }}
             />
             {/* Label */}
-            <span
+            <motion.span
               className="absolute font-mono text-[10px] tracking-wider text-text-tertiary"
               style={{
                 left: `${m.pos}%`,
@@ -375,13 +276,17 @@ function HorizontalTimeline() {
                 transform: 'translateX(-50%)',
                 zIndex: 3,
               }}
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.3, delay: TICK_START + mi * TICK_STAGGER, ease }}
             >
               {m.label}
-            </span>
+            </motion.span>
           </div>
         ))}
 
-        {/* NOW INDICATOR */}
+        {/* NOW INDICATOR — appears after all milestones */}
         <div
           className="absolute"
           style={{ left: `${nowPos}%`, top: '50%', transform: 'translate(-50%, -50%)', zIndex: 30 }}
@@ -390,7 +295,7 @@ function HorizontalTimeline() {
             initial={{ opacity: 0, scale: 0 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.9, ease }}
+            transition={{ duration: 0.5, delay: nowDelay, ease }}
           >
             <motion.div
               className="h-3 w-3 rotate-45 rounded-sm"
@@ -407,67 +312,127 @@ function HorizontalTimeline() {
           </span>
         </div>
 
-        {/* MILESTONE DOTS */}
-        {TIMELINE_MILESTONES.map((ms, i) => {
-          const pos    = getPos(ms.date)
-          const isHov  = hovered === ms.id
-          const isIP   = ms.status === 'in-progress'
-          const isComp = ms.status === 'completed'
-          const isCo   = ms.type === 'company-milestone'
-          const color  = isComp ? 'var(--color-success)' : (ms.color ?? 'var(--color-accent-blue)')
-          const dotSize = isCo ? 12 : 9
-          const glowB  = isCo ? '0 0 10px rgba(0,204,102,0.3)' : isComp ? '0 0 10px rgba(0,204,102,0.4)' : '0 0 10px rgba(0,102,255,0.3)'
-          const glowH  = isCo ? '0 0 18px rgba(0,204,102,0.5)' : isComp ? '0 0 18px rgba(0,204,102,0.6)' : '0 0 18px rgba(0,102,255,0.5)'
+        {/* MILESTONE DOTS + CONNECTOR LINES + CARDS */}
+        {TIMELINE_MILESTONES.map((ms) => {
+          const dotPos   = getPos(ms.date)
+          const side     = MILESTONE_SIDE[ms.id] ?? 'above'
+          const isHov    = hovered === ms.id
+          const isIP     = ms.status === 'in-progress'
+          const isComp   = ms.status === 'completed'
+          const isCo     = ms.type === 'company-milestone'
+          const color    = isComp ? 'var(--color-success)' : (ms.color ?? 'var(--color-accent-blue)')
+          const dotSize  = isCo ? 12 : 9
+          const glowB    = isCo ? '0 0 10px rgba(0,204,102,0.3)' : isComp ? '0 0 10px rgba(0,204,102,0.4)' : '0 0 10px rgba(0,102,255,0.3)'
+          const glowH    = isCo ? '0 0 18px rgba(0,204,102,0.5)' : isComp ? '0 0 18px rgba(0,204,102,0.6)' : '0 0 18px rgba(0,102,255,0.5)'
+          const chronoIdx = chronoOrder[ms.id]
+          const msDelay   = MILESTONE_START + chronoIdx * MILESTONE_STAGGER
+
+          // Card center position (may differ from dot due to overlap resolution)
+          const cardCenterPx = cardPositions[ms.id] ?? (dotPos / 100) * containerWidth
+          // Dot center in px
+          const dotCenterPx  = (dotPos / 100) * containerWidth
+
+          // Connector: SVG line from dot (on track) to card edge
+          // For above: line from (dotCenterPx, 150) to (cardCenterPx, 150 - CONN_H)
+          // For below: line from (dotCenterPx, 150) to (cardCenterPx, 150 + CONN_H)
+          const connEndY = side === 'above' ? 150 - CONN_H : 150 + CONN_H
 
           return (
-            <div
-              key={`dot-${ms.id}`}
-              className="absolute"
-              style={{ left: `${pos}%`, top: '50%', transform: 'translate(-50%, -50%)', zIndex: 20 }}
-            >
-              <motion.div
-                className="cursor-pointer"
-                initial={{ scale: 0, opacity: 0 }}
-                whileInView={{ scale: 1, opacity: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: 0.3 + i * 0.1, ease }}
-                onMouseEnter={() => setHovered(ms.id)}
-                onMouseLeave={() => setHovered(null)}
+            <div key={ms.id}>
+              {/* DOT on track */}
+              <div
+                className="absolute"
+                style={{ left: `${dotPos}%`, top: '50%', transform: 'translate(-50%, -50%)', zIndex: 20 }}
               >
-                {isIP ? (
-                  <motion.div
-                    style={{ width: dotSize, height: dotSize, borderRadius: '50%', backgroundColor: color }}
-                    animate={{ boxShadow: [glowB, glowH, glowB] }}
-                    transition={{ duration: 2.5, repeat: Infinity }}
-                  />
-                ) : (
-                  <div style={{
-                    width: dotSize, height: dotSize, borderRadius: '50%',
-                    backgroundColor: ms.status === 'upcoming' ? 'transparent' : color,
-                    border: ms.status === 'upcoming' ? `1.5px solid ${color}` : 'none',
-                    boxShadow: isHov ? glowH : glowB,
-                    transition: 'box-shadow 0.2s ease',
-                  }} />
-                )}
-              </motion.div>
-            </div>
-          )
-        })}
+                <motion.div
+                  className="cursor-pointer"
+                  initial={{ scale: 0, opacity: 0 }}
+                  whileInView={{ scale: 1, opacity: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.4, delay: msDelay, ease }}
+                  onMouseEnter={() => setHovered(ms.id)}
+                  onMouseLeave={() => setHovered(null)}
+                >
+                  {isIP ? (
+                    <motion.div
+                      style={{ width: dotSize, height: dotSize, borderRadius: '50%', backgroundColor: color }}
+                      animate={{ boxShadow: [glowB, glowH, glowB] }}
+                      transition={{ duration: 2.5, repeat: Infinity }}
+                    />
+                  ) : (
+                    <div style={{
+                      width: dotSize, height: dotSize, borderRadius: '50%',
+                      backgroundColor: ms.status === 'upcoming' ? 'transparent' : color,
+                      border: ms.status === 'upcoming' ? `1.5px solid ${color}` : 'none',
+                      boxShadow: isHov ? glowH : glowB,
+                      transition: 'box-shadow 0.2s ease',
+                    }} />
+                  )}
+                </motion.div>
+              </div>
 
-        {/* MILESTONE COLUMNS (card + connector) */}
-        {TIMELINE_MILESTONES.map((ms, i) => {
-          const side = MILESTONE_SIDE[ms.id] ?? (i % 2 === 0 ? 'above' : 'below')
-          const leftValue = cardPositions[ms.id] ?? `${getPos(ms.date)}%`
-          return (
-            <MilestoneColumn
-              key={`col-${ms.id}`}
-              ms={ms}
-              leftValue={leftValue}
-              side={side}
-              index={i}
-              hovered={hovered}
-              setHovered={setHovered}
-            />
+              {/* CONNECTOR LINE (SVG for angled lines when card is offset from dot) */}
+              <motion.svg
+                className="absolute left-0 top-0 pointer-events-none"
+                style={{ width: '100%', height: 300, zIndex: 5 }}
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: msDelay + 0.1 }}
+              >
+                <line
+                  x1={dotCenterPx}
+                  y1={150}
+                  x2={cardCenterPx}
+                  y2={connEndY}
+                  stroke={isComp ? '#00CC66' : (ms.color === 'var(--color-success)' ? '#00CC66' : (ms.color ?? '#0066FF'))}
+                  strokeWidth={1}
+                  opacity={isHov ? 0.5 : 0.2}
+                  style={{ transition: 'opacity 0.2s ease' }}
+                />
+              </motion.svg>
+
+              {/* CARD — positioned at resolved (non-overlapping) position */}
+              <div
+                className="absolute"
+                style={{
+                  left: `${cardCenterPx}px`,
+                  transform: 'translateX(-50%)',
+                  ...(side === 'above' ? { bottom: '50%', paddingBottom: CONN_H } : { top: '50%', paddingTop: CONN_H }),
+                  zIndex: 10,
+                }}
+              >
+                <motion.div
+                  className={cn(
+                    'cursor-pointer rounded-md border px-3 py-2.5 text-center transition-colors duration-200',
+                    isHov ? 'border-border-hover bg-bg-card-hover' : 'border-border-subtle bg-white/[0.02]'
+                  )}
+                  style={{ width: CARD_W }}
+                  initial={{ opacity: 0, y: side === 'above' ? 8 : -8 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: msDelay + 0.05, ease }}
+                  onMouseEnter={() => setHovered(ms.id)}
+                  onMouseLeave={() => setHovered(null)}
+                >
+                  <div className="flex items-center justify-center gap-1.5">
+                    <div className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: color }} />
+                    <span className="text-xs font-medium leading-snug text-text-primary">{ms.label}</span>
+                  </div>
+                  <span className="mt-1 block font-mono text-[10px] text-text-tertiary">{ms.displayDate}</span>
+                  {isHov && ms.description && (
+                    <motion.p
+                      className="mt-1.5 text-[10px] leading-relaxed text-text-secondary"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      {ms.description}
+                    </motion.p>
+                  )}
+                </motion.div>
+              </div>
+            </div>
           )
         })}
       </div>
@@ -515,7 +480,7 @@ function VerticalTimeline() {
                 initial={{ opacity: 0, x: -10 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: i * 0.1, ease }}
+                transition={{ duration: 0.5, delay: MILESTONE_START + i * MILESTONE_STAGGER, ease }}
                 onMouseEnter={() => setHovered(ms.id)}
                 onMouseLeave={() => setHovered(null)}
               >
@@ -545,7 +510,7 @@ function VerticalTimeline() {
                   initial={{ opacity: 0 }}
                   whileInView={{ opacity: 1 }}
                   viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: 0.5 }}
+                  transition={{ duration: 0.5, delay: MILESTONE_START + (i + 0.5) * MILESTONE_STAGGER }}
                 >
                   <motion.div
                     className="h-2.5 w-2.5 rotate-45 rounded-sm"
