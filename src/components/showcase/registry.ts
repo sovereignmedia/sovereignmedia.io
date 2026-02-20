@@ -27,17 +27,17 @@ interface RegistryEntry {
  * Add new showcase components here.
  */
 export const SHOWCASE_REGISTRY: Record<string, RegistryEntry> = {
-  // Example:
-  // 'PricingCalculator': {
-  //   meta: {
-  //     name: 'Interactive Pricing Calculator',
-  //     description: 'Real-time pricing calculator with scenario modeling',
-  //     source: 'custom',
-  //     tags: ['calculator', 'interactive', 'proposal-widget'],
-  //     addedDate: '2025-02-19',
-  //   },
-  //   load: () => import('./PricingCalculator'),
-  // },
+  RegACalculator: {
+    meta: {
+      name: 'Reg A+ Financial Calculator',
+      description:
+        'Interactive ROI calculator with ROAS optimization and IPO impact scenario modeling for Reg A+ fundraising',
+      source: 'custom',
+      tags: ['calculator', 'interactive', 'proposal-widget', 'financial'],
+      addedDate: '2026-02-19',
+    },
+    load: () => import('@/components/widgets/RegACalculator').then((m) => ({ default: m.RegACalculator })),
+  },
 }
 
 /**
