@@ -385,9 +385,9 @@ function HorizontalTimeline() {
                   y1={150}
                   x2={cardCenterPx}
                   y2={connEndY}
-                  stroke={isComp ? '#00CC66' : (ms.color === 'var(--color-success)' ? '#00CC66' : (ms.color ?? '#0066FF'))}
-                  strokeWidth={1}
-                  opacity={isHov ? 0.5 : 0.2}
+                  stroke={isComp ? '#00CC66' : (ms.color === 'var(--color-success)' ? '#00CC66' : '#FFFFFF')}
+                  strokeWidth={1.5}
+                  opacity={isHov ? 0.6 : 0.35}
                   style={{ transition: 'opacity 0.2s ease' }}
                 />
               </motion.svg>
