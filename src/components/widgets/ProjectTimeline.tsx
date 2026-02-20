@@ -22,7 +22,7 @@ interface TimelineMilestone {
 }
 
 // ============================================
-// DATA — edit milestones and range here
+// DATA
 // ============================================
 
 const TIMELINE_RANGE = { start: '2026-01', end: '2026-12' }
@@ -76,7 +76,6 @@ const TIMELINE_MILESTONES: TimelineMilestone[] = [
   },
 ]
 
-// Which side each milestone label appears on
 const MILESTONE_SIDE: Record<string, 'above' | 'below'> = {
   'engagement-start':    'above',
   'dashboards-complete': 'below',
@@ -86,11 +85,11 @@ const MILESTONE_SIDE: Record<string, 'above' | 'below'> = {
 }
 
 // ============================================
-// Layout constants
+// Layout
 // ============================================
 
-const CARD_W  = 152   // px — label card fixed width
-const CONN_H  = 32    // px — connector line height
+const CARD_W  = 152
+const CONN_H  = 32
 
 // ============================================
 // Helpers
@@ -132,12 +131,18 @@ function getMonthLabels() {
 const ease = [0.16, 1, 0.3, 1] as const
 
 // ============================================
-// Milestone card + connector (unified column)
+// IMPORTANT: Framer Motion overrides CSS transforms
+// on animated elements. After animation completes,
+// transform resets to 'none', wiping out any
+// translateX(-50%) we set via style prop.
 //
-// KEY INSIGHT: The card and connector are rendered
-// as a single flex column so they always touch.
-// The whole column is positioned with its edge
-// touching the track line via CSS.
+// Solution: NEVER use CSS transform for positioning
+// on motion.div elements. Instead, use calc() in
+// left/top, or use a wrapper <div> for the transform.
+// ============================================
+
+// ============================================
+// Milestone card + connector column
 // ============================================
 
 function MilestoneColumn({
@@ -157,118 +162,109 @@ function MilestoneColumn({
 }) {
   const isHov  = hovered === ms.id
   const isComp = ms.status === 'completed'
-  const isCo   = ms.type === 'company-milestone'
   const color  = isComp ? 'var(--color-success)' : (ms.color ?? 'var(--color-accent-blue)')
 
-  // Clamp card center so it never overflows edges
+  // Use a NON-animated wrapper div for position + centering transform.
+  // The inner motion.div handles only opacity/y animation.
   const clampX = `clamp(${CARD_W / 2}px, ${pos}%, calc(100% - ${CARD_W / 2}px))`
 
   return (
-    <motion.div
-      className="absolute flex items-center"
+    <div
+      className="absolute"
       style={{
         left: clampX,
         transform: 'translateX(-50%)',
-        // For above: column bottom touches track. Use bottom: 50% (track is at 50%)
-        // For below: column top touches track. Use top: 50%
-        ...(side === 'above'
-          ? { bottom: '50%', flexDirection: 'column' }
-          : { top: '50%', flexDirection: 'column' }
-        ),
+        ...(side === 'above' ? { bottom: '50%' } : { top: '50%' }),
         zIndex: 10,
       }}
-      initial={{ opacity: 0, y: side === 'above' ? 8 : -8 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.5, delay: 0.2 + index * 0.1, ease }}
-      onMouseEnter={() => setHovered(ms.id)}
-      onMouseLeave={() => setHovered(null)}
     >
-      {side === 'above' ? (
-        <>
-          {/* Card first (above track), then connector going down to track */}
-          <div
-            className={cn(
-              'cursor-pointer rounded-md border px-3 py-2.5 text-center transition-colors duration-200',
-              isHov ? 'border-border-hover bg-bg-card-hover' : 'border-border-subtle bg-white/[0.02]'
-            )}
-            style={{ width: CARD_W }}
-          >
-            <div className="flex items-center justify-center gap-1.5">
-              <div className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: color }} />
-              <span className="text-xs font-medium leading-snug text-text-primary">{ms.label}</span>
+      <motion.div
+        className="flex flex-col items-center"
+        initial={{ opacity: 0, y: side === 'above' ? 8 : -8 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5, delay: 0.2 + index * 0.1, ease }}
+        onMouseEnter={() => setHovered(ms.id)}
+        onMouseLeave={() => setHovered(null)}
+      >
+        {side === 'above' ? (
+          <>
+            <div
+              className={cn(
+                'cursor-pointer rounded-md border px-3 py-2.5 text-center transition-colors duration-200',
+                isHov ? 'border-border-hover bg-bg-card-hover' : 'border-border-subtle bg-white/[0.02]'
+              )}
+              style={{ width: CARD_W }}
+            >
+              <div className="flex items-center justify-center gap-1.5">
+                <div className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: color }} />
+                <span className="text-xs font-medium leading-snug text-text-primary">{ms.label}</span>
+              </div>
+              <span className="mt-1 block font-mono text-[10px] text-text-tertiary">{ms.displayDate}</span>
+              {isHov && ms.description && (
+                <motion.p
+                  className="mt-1.5 text-[10px] leading-relaxed text-text-secondary"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  {ms.description}
+                </motion.p>
+              )}
             </div>
-            <span className="mt-1 block font-mono text-[10px] text-text-tertiary">{ms.displayDate}</span>
-            {isHov && ms.description && (
-              <motion.p
-                className="mt-1.5 text-[10px] leading-relaxed text-text-secondary"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.2 }}
-              >
-                {ms.description}
-              </motion.p>
-            )}
-          </div>
-          {/* Connector line */}
-          <div
-            style={{
-              width: 1,
-              height: CONN_H,
-              backgroundColor: color,
-              opacity: isHov ? 0.5 : 0.2,
-              transition: 'opacity 0.2s ease',
-            }}
-          />
-        </>
-      ) : (
-        <>
-          {/* Connector first (from track down), then card */}
-          <div
-            style={{
-              width: 1,
-              height: CONN_H,
-              backgroundColor: color,
-              opacity: isHov ? 0.5 : 0.2,
-              transition: 'opacity 0.2s ease',
-            }}
-          />
-          <div
-            className={cn(
-              'cursor-pointer rounded-md border px-3 py-2.5 text-center transition-colors duration-200',
-              isHov ? 'border-border-hover bg-bg-card-hover' : 'border-border-subtle bg-white/[0.02]'
-            )}
-            style={{ width: CARD_W }}
-          >
-            <div className="flex items-center justify-center gap-1.5">
-              <div className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: color }} />
-              <span className="text-xs font-medium leading-snug text-text-primary">{ms.label}</span>
+            <div
+              style={{
+                width: 1,
+                height: CONN_H,
+                backgroundColor: color,
+                opacity: isHov ? 0.5 : 0.2,
+                transition: 'opacity 0.2s ease',
+              }}
+            />
+          </>
+        ) : (
+          <>
+            <div
+              style={{
+                width: 1,
+                height: CONN_H,
+                backgroundColor: color,
+                opacity: isHov ? 0.5 : 0.2,
+                transition: 'opacity 0.2s ease',
+              }}
+            />
+            <div
+              className={cn(
+                'cursor-pointer rounded-md border px-3 py-2.5 text-center transition-colors duration-200',
+                isHov ? 'border-border-hover bg-bg-card-hover' : 'border-border-subtle bg-white/[0.02]'
+              )}
+              style={{ width: CARD_W }}
+            >
+              <div className="flex items-center justify-center gap-1.5">
+                <div className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: color }} />
+                <span className="text-xs font-medium leading-snug text-text-primary">{ms.label}</span>
+              </div>
+              <span className="mt-1 block font-mono text-[10px] text-text-tertiary">{ms.displayDate}</span>
+              {isHov && ms.description && (
+                <motion.p
+                  className="mt-1.5 text-[10px] leading-relaxed text-text-secondary"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  {ms.description}
+                </motion.p>
+              )}
             </div>
-            <span className="mt-1 block font-mono text-[10px] text-text-tertiary">{ms.displayDate}</span>
-            {isHov && ms.description && (
-              <motion.p
-                className="mt-1.5 text-[10px] leading-relaxed text-text-secondary"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.2 }}
-              >
-                {ms.description}
-              </motion.p>
-            )}
-          </div>
-        </>
-      )}
-    </motion.div>
+          </>
+        )}
+      </motion.div>
+    </div>
   )
 }
 
 // ============================================
 // Desktop Horizontal Timeline
-//
-// Uses a single container where the track sits
-// at exactly 50% height. Above columns are
-// anchored bottom: 50%, below columns top: 50%.
-// This guarantees connectors always touch the track.
 // ============================================
 
 function HorizontalTimeline() {
@@ -278,27 +274,27 @@ function HorizontalTimeline() {
 
   return (
     <div className="relative hidden md:block select-none">
-
-      {/* Container — 300px tall, track at 50% (150px) */}
       <div className="relative w-full" style={{ height: 300 }}>
 
-        {/* ── TRACK LINE at 50% ── */}
-        <motion.div
+        {/* TRACK LINE at 50% */}
+        {/* Use a plain div wrapper for the transform, animate the inner */}
+        <div
           className="absolute left-0 right-0"
-          style={{
-            top: '50%',
-            height: 2,
-            transform: 'translateY(-50%)',
-            zIndex: 2,
-            background: 'linear-gradient(to right, transparent 0%, var(--color-border-default) 6%, var(--color-border-default) 94%, transparent 100%)',
-          }}
-          initial={{ scaleX: 0, transformOrigin: 'left' }}
-          whileInView={{ scaleX: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 1.2, ease }}
-        />
+          style={{ top: '50%', transform: 'translateY(-50%)', height: 2, zIndex: 2 }}
+        >
+          <motion.div
+            className="h-full w-full"
+            style={{
+              background: 'linear-gradient(to right, transparent 0%, var(--color-border-default) 6%, var(--color-border-default) 94%, transparent 100%)',
+            }}
+            initial={{ scaleX: 0, transformOrigin: 'left' }}
+            whileInView={{ scaleX: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 1.2, ease }}
+          />
+        </div>
 
-        {/* ── MONTH LABELS (below track) ── */}
+        {/* MONTH LABELS */}
         {months.map((m) => (
           <span
             key={m.label}
@@ -314,30 +310,33 @@ function HorizontalTimeline() {
           </span>
         ))}
 
-        {/* ── NOW INDICATOR (on track) ── */}
-        <motion.div
+        {/* NOW INDICATOR — use wrapper div for transform */}
+        <div
           className="absolute"
           style={{ left: `${nowPos}%`, top: '50%', transform: 'translate(-50%, -50%)', zIndex: 30 }}
-          initial={{ opacity: 0, scale: 0 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.9, ease }}
         >
           <motion.div
-            className="h-3 w-3 rotate-45 rounded-sm"
-            style={{ backgroundColor: 'var(--color-accent-blue)' }}
-            animate={{ boxShadow: ['0 0 8px rgba(0,102,255,0.3)', '0 0 18px rgba(0,102,255,0.6)', '0 0 8px rgba(0,102,255,0.3)'] }}
-            transition={{ duration: 2.5, repeat: Infinity }}
-          />
+            initial={{ opacity: 0, scale: 0 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.9, ease }}
+          >
+            <motion.div
+              className="h-3 w-3 rotate-45 rounded-sm"
+              style={{ backgroundColor: 'var(--color-accent-blue)' }}
+              animate={{ boxShadow: ['0 0 8px rgba(0,102,255,0.3)', '0 0 18px rgba(0,102,255,0.6)', '0 0 8px rgba(0,102,255,0.3)'] }}
+              transition={{ duration: 2.5, repeat: Infinity }}
+            />
+          </motion.div>
           <span
             className="absolute font-mono text-[9px] font-semibold tracking-[0.15em] text-accent-blue"
             style={{ top: -18, left: '50%', transform: 'translateX(-50%)', whiteSpace: 'nowrap', textShadow: '0 0 8px rgba(0,102,255,0.4)' }}
           >
             NOW
           </span>
-        </motion.div>
+        </div>
 
-        {/* ── MILESTONE DOTS (on track) ── */}
+        {/* MILESTONE DOTS — wrapper div for transform, motion.div for animation */}
         {TIMELINE_MILESTONES.map((ms, i) => {
           const pos    = getPos(ms.date)
           const isHov  = hovered === ms.id
@@ -350,37 +349,41 @@ function HorizontalTimeline() {
           const glowH  = isCo ? '0 0 18px rgba(255,255,255,0.5)' : isComp ? '0 0 18px rgba(0,204,102,0.6)' : '0 0 18px rgba(0,102,255,0.5)'
 
           return (
-            <motion.div
+            <div
               key={`dot-${ms.id}`}
-              className="absolute cursor-pointer"
+              className="absolute"
               style={{ left: `${pos}%`, top: '50%', transform: 'translate(-50%, -50%)', zIndex: 20 }}
-              initial={{ scale: 0, opacity: 0 }}
-              whileInView={{ scale: 1, opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: 0.3 + i * 0.1, ease }}
-              onMouseEnter={() => setHovered(ms.id)}
-              onMouseLeave={() => setHovered(null)}
             >
-              {isIP ? (
-                <motion.div
-                  style={{ width: dotSize, height: dotSize, borderRadius: '50%', backgroundColor: color }}
-                  animate={{ boxShadow: [glowB, glowH, glowB] }}
-                  transition={{ duration: 2.5, repeat: Infinity }}
-                />
-              ) : (
-                <div style={{
-                  width: dotSize, height: dotSize, borderRadius: '50%',
-                  backgroundColor: ms.status === 'upcoming' ? 'transparent' : color,
-                  border: ms.status === 'upcoming' ? `1.5px solid ${color}` : 'none',
-                  boxShadow: isHov ? glowH : glowB,
-                  transition: 'box-shadow 0.2s ease',
-                }} />
-              )}
-            </motion.div>
+              <motion.div
+                className="cursor-pointer"
+                initial={{ scale: 0, opacity: 0 }}
+                whileInView={{ scale: 1, opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: 0.3 + i * 0.1, ease }}
+                onMouseEnter={() => setHovered(ms.id)}
+                onMouseLeave={() => setHovered(null)}
+              >
+                {isIP ? (
+                  <motion.div
+                    style={{ width: dotSize, height: dotSize, borderRadius: '50%', backgroundColor: color }}
+                    animate={{ boxShadow: [glowB, glowH, glowB] }}
+                    transition={{ duration: 2.5, repeat: Infinity }}
+                  />
+                ) : (
+                  <div style={{
+                    width: dotSize, height: dotSize, borderRadius: '50%',
+                    backgroundColor: ms.status === 'upcoming' ? 'transparent' : color,
+                    border: ms.status === 'upcoming' ? `1.5px solid ${color}` : 'none',
+                    boxShadow: isHov ? glowH : glowB,
+                    transition: 'box-shadow 0.2s ease',
+                  }} />
+                )}
+              </motion.div>
+            </div>
           )
         })}
 
-        {/* ── MILESTONE COLUMNS (card + connector, anchored to track) ── */}
+        {/* MILESTONE COLUMNS (card + connector) */}
         {TIMELINE_MILESTONES.map((ms, i) => {
           const pos  = getPos(ms.date)
           const side = MILESTONE_SIDE[ms.id] ?? (i % 2 === 0 ? 'above' : 'below')
@@ -396,7 +399,6 @@ function HorizontalTimeline() {
             />
           )
         })}
-
       </div>
     </div>
   )
