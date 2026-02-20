@@ -4,6 +4,32 @@
 
 ---
 
+## 2026-02-19 — ProjectTimeline Major Fixes & PortalCard Expand Button Fix
+
+### Changes
+- **Framer Motion transform override fix**: Discovered that Framer Motion wipes CSS `transform` (e.g., `translateX(-50%)`) on animated `motion.div` elements after animation completes, resetting to `transform: none`. Fix: use plain `<div>` wrappers for positioning transforms, nest `<motion.div>` inside for animations only.
+- **SVG diagonal connector lines**: Replaced fixed-height div connectors with SVG `<line>` elements. Supports diagonal lines when cards are offset from dots due to overlap resolution. Future-proof for adding more milestones.
+- **Overlap resolution algorithm**: Added `resolveOverlaps()` function that groups same-side milestones, converts % positions to px, pushes overlapping cards apart left-to-right, then clamps right edge. Fixes April/May below-card overlap.
+- **Full year range (JAN–DEC 2026)**: Extended `TIMELINE_RANGE` from Feb–Oct to Jan–Dec. 12 month labels evenly spaced.
+- **Month tick marks**: Added 14px tall, 1.5px wide tick marks at each month position on the track line.
+- **Track line extends full width**: Track line runs from left edge to right edge (JAN to DEC), no gradient fade.
+- **IPO dot color changed to green**: IPO milestone uses `var(--color-success)` (#00CC66) instead of white.
+- **Sequential chronological animation**: All timeline elements now load in order — track line draws first, ticks appear left-to-right, milestones appear chronologically, NOW indicator appears last. Uses `getChronoOrder()` for sorted delay indices.
+- **Connector visibility fix**: Increased stroke from 1px blue at 0.2 opacity → 1.5px white at 0.35 opacity (0.6 on hover). Connectors are now clearly visible.
+- **PortalCard expand/collapse button fix**: The `animate={{ rotate: 180 }}` was on the entire button container including the "Collapse" text, causing it to appear upside down. Moved rotation to only wrap the `<ChevronDown>` icon.
+
+### Files Modified
+- `src/components/widgets/ProjectTimeline.tsx` — Major rewrite: SVG connectors, overlap resolution, sequential animation, full year range, tick marks, green IPO, visible connectors
+- `src/components/portal/PortalCard.tsx` — Fixed expand/collapse button rotation (only rotate chevron icon, not text)
+
+### Decisions
+- Used plain `<div>` wrappers for CSS transforms with nested `<motion.div>` for animations — this pattern avoids the Framer Motion transform override bug
+- SVG lines chosen over div-based connectors to support diagonal angles when cards are offset from dots
+- White connector lines instead of blue — more visible against dark background, matches design system's "white is the voice" principle
+- Container uses `ResizeObserver` for accurate width measurement instead of hardcoded 960px
+
+---
+
 ## 2026-02-19 — ProjectTimeline Widget & Integration
 
 ### Changes
