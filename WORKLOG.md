@@ -4,6 +4,32 @@
 
 ---
 
+## 2026-02-19 — Reg A+ Financial Calculator Widget
+
+### Changes
+- **RegACalculator widget**: Built full interactive two-tab financial calculator with premium custom-styled sliders, animated metric cards, comparison bar chart, and IPO scenario modeling
+- **Tab 1 — Reg A+ Performance**: ROAS slider (5-12x), SM investment ($100K-$500K), performance fee (5-30%). Calculates baseline vs optimized ad spend, shares preserved, equity value, net savings, ROI multiplier. Animated horizontal bar chart comparison.
+- **Tab 2 — IPO Impact**: Share price impact slider ($0-$10/share), 3 scenario cards (Conservative/Base Case/Aggressive), market cap impact calculations, value creation ratio callout, Reg A+ connection blockquote.
+- **Pill-shaped tab toggle**: Uses Framer Motion `layoutId` for smooth active indicator animation between tabs.
+- **Custom slider CSS**: Added to globals.css — white 16px thumb with blue glow on hover/active, transparent track, cross-browser support (webkit + moz).
+- **ClientPortal template extended**: Added `afterPricingSections` prop/slot between Pricing and Timeline sections.
+- **FINANCIAL_CONSTANTS**: All financial assumptions defined in a single object at top of component file for easy editing.
+
+### Files Modified
+- `src/components/widgets/RegACalculator.tsx` — New: full calculator component (~500 lines)
+- `src/components/widgets/_meta.ts` — New: showcase registry metadata
+- `src/components/portal/ClientPortal.tsx` — Added `afterPricingSections` prop and slot
+- `src/app/frontieras-work/page.tsx` — Imports calculator, renders via afterPricingSections
+- `src/styles/globals.css` — Added `.slider-input` custom range input styles
+
+### Decisions
+- Calculator is a standalone widget in `src/components/widgets/` (not showcase) since it's tightly coupled to Frontieras financial data
+- Used pure CSS/HTML for bar chart instead of a charting library — keeps bundle small and matches design system
+- Financial constants in a single object for easy client-specific adjustment
+- Added `afterPricingSections` slot to template rather than rearranging section order, keeping the template composable
+
+---
+
 ## 2026-02-19 — UI Polish, DNS Setup, Auth Flow Overhaul
 
 ### Changes
