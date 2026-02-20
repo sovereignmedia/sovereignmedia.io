@@ -117,11 +117,13 @@ interface ClientPortalProps {
   config: PortalConfig
   /** Optional: render custom sections between standard sections */
   extraSections?: React.ReactNode
+  /** Optional: render custom sections between pricing and timeline */
+  afterPricingSections?: React.ReactNode
   /** Optional: hide specific sections */
   hideSections?: ('overview' | 'deliverables' | 'pricing' | 'timeline' | 'metrics' | 'footer')[]
 }
 
-export function ClientPortal({ config, extraSections, hideSections = [] }: ClientPortalProps) {
+export function ClientPortal({ config, extraSections, afterPricingSections, hideSections = [] }: ClientPortalProps) {
   const show = (section: string) => !hideSections.includes(section as typeof hideSections[number])
 
   return (
@@ -189,6 +191,9 @@ export function ClientPortal({ config, extraSections, hideSections = [] }: Clien
           <Divider />
         </>
       )}
+
+      {/* After-pricing custom sections slot */}
+      {afterPricingSections}
 
       {/* TIMELINE */}
       {show('timeline') && config.timeline && config.timeline.length > 0 && (

@@ -228,6 +228,56 @@
 }
 
 /* ============================================
+   PREMIUM SLIDER STYLES
+   ============================================ */
+
+.slider-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-text-primary);
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.6), 0 0 10px rgba(0, 102, 255, 0.15);
+  transition: box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.slider-input::-webkit-slider-thumb:hover {
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.6), 0 0 16px rgba(0, 102, 255, 0.4);
+}
+
+.slider-input::-webkit-slider-thumb:active {
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 102, 255, 0.5);
+  transform: scale(1.1);
+}
+
+.slider-input::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-text-primary);
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.6), 0 0 10px rgba(0, 102, 255, 0.15);
+}
+
+.slider-input::-moz-range-thumb:hover {
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.6), 0 0 16px rgba(0, 102, 255, 0.4);
+}
+
+.slider-input::-moz-range-track {
+  background: transparent;
+  border: none;
+}
+
+.slider-input::-webkit-slider-runnable-track {
+  background: transparent;
+  border: none;
+}
+
+/* ============================================
    MDX PROSE STYLES
    ============================================ */
 
