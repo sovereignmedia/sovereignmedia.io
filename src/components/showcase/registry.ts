@@ -38,6 +38,17 @@ export const SHOWCASE_REGISTRY: Record<string, RegistryEntry> = {
     },
     load: () => import('@/components/widgets/RegACalculator').then((m) => ({ default: m.RegACalculator })),
   },
+  ProjectTimeline: {
+    meta: {
+      name: 'Project Timeline',
+      description:
+        'Horizontal milestone timeline with animated track, status indicators, and NOW marker for project delivery tracking',
+      source: 'custom',
+      tags: ['timeline', 'interactive', 'proposal-widget', 'project-management'],
+      addedDate: '2026-02-19',
+    },
+    load: () => import('@/components/widgets/ProjectTimeline').then((m) => ({ default: m.ProjectTimeline })),
+  },
 }
 
 /**
