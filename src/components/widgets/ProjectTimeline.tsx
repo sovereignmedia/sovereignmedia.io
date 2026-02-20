@@ -27,8 +27,8 @@ interface TimelineMilestone {
 // ============================================
 
 const TIMELINE_RANGE = {
-  start: '2026-02',
-  end: '2026-10',
+  start: '2026-01',
+  end: '2026-12',
 }
 
 const TIMELINE_MILESTONES: TimelineMilestone[] = [
@@ -137,37 +137,47 @@ function getMonthLabels(): { label: string; position: number }[] {
   return months
 }
 
-// Assign each milestone a row: 'above' | 'below', with stagger for
-// milestones that are too close together on the same side.
+// ============================================
+// Layout assignment — which side each milestone appears on
+// ============================================
+
 interface LayoutMilestone extends TimelineMilestone {
   side: 'above' | 'below'
-  connectorHeight: number // px — so close milestones get taller connectors
 }
 
 function layoutMilestones(): LayoutMilestone[] {
-  // Manually assign sides to ensure no collisions given known data
   const sides: Record<string, 'above' | 'below'> = {
-    'engagement-start': 'above',
+    'engagement-start':    'above',
     'dashboards-complete': 'below',
-    '3d-animation': 'above',
-    'marketing-videos': 'below',
-    'ipo': 'above',
+    '3d-animation':        'above',
+    'marketing-videos':    'below',
+    'ipo':                 'above',
   }
-
-  // Give taller connectors to milestones that share roughly the same x position
-  // so their cards don't overlap the track area
   return TIMELINE_MILESTONES.map((ms) => ({
     ...ms,
     side: sides[ms.id] ?? (TIMELINE_MILESTONES.indexOf(ms) % 2 === 0 ? 'above' : 'below'),
-    connectorHeight: 28,
   }))
 }
 
 // ============================================
-// Label card component
+// Single-container layout constants
+// All Y values are from the top of the outer container.
+// TRACK_Y is the shared anchor — every element references it.
 // ============================================
 
-const CARD_WIDTH = 148 // px — used for both card width and overlap detection
+const TOTAL_HEIGHT = 300  // px — outer container height
+const TRACK_Y      = 150  // px — Y position of track line
+const ABOVE_CONN_H = 40   // px — connector height above track
+const BELOW_CONN_H = 40   // px — connector height below track
+const CARD_WIDTH   = 148  // px — label card width
+
+// ============================================
+// Label card component
+// above: column order = [card][connector], anchored bottom: TOTAL_HEIGHT - TRACK_Y
+//        so connector bottom always touches TRACK_Y exactly
+// below: column order = [connector][card], anchored top: TRACK_Y
+//        so connector top always touches TRACK_Y exactly
+// ============================================
 
 function LabelCard({
   ms,
@@ -175,7 +185,6 @@ function LabelCard({
   onHover,
   onLeave,
   side,
-  connectorHeight,
   index,
 }: {
   ms: TimelineMilestone
@@ -183,7 +192,6 @@ function LabelCard({
   onHover: () => void
   onLeave: () => void
   side: 'above' | 'below'
-  connectorHeight: number
   index: number
 }) {
   const pos = getPosition(ms.date)
@@ -192,19 +200,61 @@ function LabelCard({
       ? 'var(--color-success)'
       : ms.color || 'var(--color-accent-blue)'
 
+  // Clamp prevents card center from going within CARD_WIDTH/2 of either edge
+  const clampedLeft = `clamp(${CARD_WIDTH / 2}px, ${pos}%, calc(100% - ${CARD_WIDTH / 2}px))`
+  const connH = side === 'above' ? ABOVE_CONN_H : BELOW_CONN_H
+
+  const cardContent = (
+    <div
+      className={cn(
+        'rounded-md border px-3 py-2.5 text-center transition-all duration-300',
+        isHovered ? 'border-border-hover bg-bg-card-hover' : 'border-border-subtle bg-white/[0.02]'
+      )}
+      style={{ width: CARD_WIDTH }}
+    >
+      <div className="flex items-center justify-center gap-1.5">
+        <div className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: dotColor }} />
+        <span className="text-xs font-medium leading-snug text-text-primary">{ms.label}</span>
+      </div>
+      <span className="mt-1 block font-mono text-[10px] text-text-tertiary">{ms.displayDate}</span>
+      {isHovered && ms.description && (
+        <motion.p
+          className="mt-1.5 text-[10px] leading-relaxed text-text-secondary"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.25 }}
+        >
+          {ms.description}
+        </motion.p>
+      )}
+    </div>
+  )
+
+  const connector = (
+    <div
+      className="mx-auto w-px"
+      style={{
+        height: connH,
+        backgroundColor: dotColor,
+        opacity: isHovered ? 0.5 : 0.2,
+        transition: 'opacity 0.3s ease',
+      }}
+    />
+  )
+
   return (
     <motion.div
-      className="absolute"
+      className="absolute flex flex-col"
       style={{
-        left: `${pos}%`,
-        // For 'above': card sits above track. For 'below': card sits below track.
-        // The parent container has the track at its vertical center.
-        // We use bottom/top offsets from the center.
+        left: clampedLeft,
+        transform: 'translateX(-50%)',
+        // above: pin bottom of column to TRACK_Y — connector bottom meets track
+        // below: pin top of column to TRACK_Y — connector top meets track
         ...(side === 'above'
-          ? { bottom: 0, transform: 'translateX(-50%)' }
-          : { top: 0, transform: 'translateX(-50%)' }),
+          ? { bottom: TOTAL_HEIGHT - TRACK_Y }
+          : { top: TRACK_Y }),
       }}
-      initial={{ opacity: 0, y: side === 'above' ? 12 : -12 }}
+      initial={{ opacity: 0, y: side === 'above' ? 10 : -10 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.6, delay: 0.2 + index * 0.1, ease: easeOutExpo }}
@@ -212,78 +262,11 @@ function LabelCard({
       onMouseLeave={onLeave}
     >
       {side === 'above' ? (
-        // Above: card → connector → track
-        <>
-          <div
-            className={cn(
-              'rounded-md border px-3 py-2.5 text-center transition-all duration-300',
-              isHovered ? 'border-border-hover bg-bg-card-hover' : 'border-border-subtle bg-white/[0.02]'
-            )}
-            style={{ width: CARD_WIDTH }}
-          >
-            <div className="flex items-center justify-center gap-1.5">
-              <div className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: dotColor }} />
-              <span className="text-xs font-medium leading-snug text-text-primary">{ms.label}</span>
-            </div>
-            <span className="mt-1 block font-mono text-[10px] text-text-tertiary">{ms.displayDate}</span>
-            {isHovered && ms.description && (
-              <motion.p
-                className="mt-1.5 text-[10px] leading-relaxed text-text-secondary"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.25 }}
-              >
-                {ms.description}
-              </motion.p>
-            )}
-          </div>
-          {/* Connector */}
-          <div
-            className="mx-auto w-px"
-            style={{
-              height: connectorHeight,
-              backgroundColor: dotColor,
-              opacity: isHovered ? 0.5 : 0.2,
-              transition: 'opacity 0.3s ease',
-            }}
-          />
-        </>
+        // Card on top, connector on bottom — connector bottom = TRACK_Y
+        <>{cardContent}{connector}</>
       ) : (
-        // Below: track → connector → card
-        <>
-          <div
-            className="mx-auto w-px"
-            style={{
-              height: connectorHeight,
-              backgroundColor: dotColor,
-              opacity: isHovered ? 0.5 : 0.2,
-              transition: 'opacity 0.3s ease',
-            }}
-          />
-          <div
-            className={cn(
-              'rounded-md border px-3 py-2.5 text-center transition-all duration-300',
-              isHovered ? 'border-border-hover bg-bg-card-hover' : 'border-border-subtle bg-white/[0.02]'
-            )}
-            style={{ width: CARD_WIDTH }}
-          >
-            <div className="flex items-center justify-center gap-1.5">
-              <div className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: dotColor }} />
-              <span className="text-xs font-medium leading-snug text-text-primary">{ms.label}</span>
-            </div>
-            <span className="mt-1 block font-mono text-[10px] text-text-tertiary">{ms.displayDate}</span>
-            {isHovered && ms.description && (
-              <motion.p
-                className="mt-1.5 text-[10px] leading-relaxed text-text-secondary"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.25 }}
-              >
-                {ms.description}
-              </motion.p>
-            )}
-          </div>
-        </>
+        // Connector on top, card on bottom — connector top = TRACK_Y
+        <>{connector}{cardContent}</>
       )}
     </motion.div>
   )
@@ -293,20 +276,11 @@ function LabelCard({
 // Desktop Horizontal Timeline
 // ============================================
 
-// Heights (px)
-const LABEL_AREA_H = 110 // height of the above-label area
-const TRACK_H = 2        // height of the track bar
-const BELOW_H = 110      // height of the below-label area (below month labels)
-const MONTH_ROW_H = 20   // height of month label row
-
 function HorizontalTimeline() {
   const [hoveredId, setHoveredId] = useState<string | null>(null)
   const months = useMemo(() => getMonthLabels(), [])
   const nowPos = useMemo(() => getNowPosition(), [])
   const laid = useMemo(() => layoutMilestones(), [])
-
-  const above = laid.filter((m) => m.side === 'above')
-  const below = laid.filter((m) => m.side === 'below')
 
   return (
     <div className="relative hidden md:block select-none">
@@ -319,35 +293,21 @@ function HorizontalTimeline() {
         }}
       />
 
-      {/* ── ABOVE LABELS ────────────────────────────── */}
-      {/* Positioned relative container; cards anchor bottom: 0 so connector meets track */}
-      <div className="relative" style={{ height: LABEL_AREA_H }}>
-        {above.map((ms, i) => (
-          <LabelCard
-            key={ms.id}
-            ms={ms}
-            isHovered={hoveredId === ms.id}
-            onHover={() => setHoveredId(ms.id)}
-            onLeave={() => setHoveredId(null)}
-            side="above"
-            connectorHeight={ms.connectorHeight}
-            index={i}
-          />
-        ))}
-      </div>
+      {/* ── SINGLE COORDINATE CONTAINER ─────────────────────────────────
+          All child elements are absolutely positioned using TRACK_Y as
+          the shared reference point. No cross-container alignment needed.
+      ───────────────────────────────────────────────────────────────── */}
+      <div className="relative" style={{ height: TOTAL_HEIGHT }}>
 
-      {/* ── TRACK ───────────────────────────────────── */}
-      <div className="relative" style={{ height: TRACK_H + 24 }}>
-        {/* The actual line */}
+        {/* ── TRACK LINE ── */}
         <motion.div
-          className="absolute"
+          className="absolute left-0 right-0"
           style={{
-            top: 12,
-            left: 0,
-            right: 0,
-            height: TRACK_H,
+            top: TRACK_Y,
+            height: 2,
             background:
               'linear-gradient(to right, transparent 1%, var(--color-border-default) 8%, var(--color-border-default) 92%, transparent 99%)',
+            zIndex: 1,
           }}
           initial={{ scaleX: 0, transformOrigin: 'left' }}
           whileInView={{ scaleX: 1 }}
@@ -355,12 +315,28 @@ function HorizontalTimeline() {
           transition={{ duration: 1.2, ease: easeOutExpo }}
         />
 
-        {/* NOW indicator */}
+        {/* ── MONTH LABELS — sit just below the track ── */}
+        {months.map((month) => (
+          <span
+            key={month.label}
+            className="absolute font-mono text-[10px] uppercase tracking-wider text-text-tertiary"
+            style={{
+              left: `${month.position}%`,
+              top: TRACK_Y + 12,
+              transform: 'translateX(-50%)',
+              zIndex: 10,
+            }}
+          >
+            {month.label}
+          </span>
+        ))}
+
+        {/* ── NOW INDICATOR ── */}
         <motion.div
           className="absolute z-30"
           style={{
             left: `${nowPos}%`,
-            top: 12,
+            top: TRACK_Y,
             transform: 'translate(-50%, -50%)',
           }}
           initial={{ opacity: 0, scale: 0 }}
@@ -393,7 +369,7 @@ function HorizontalTimeline() {
           </span>
         </motion.div>
 
-        {/* Milestone dots */}
+        {/* ── MILESTONE DOTS — centered on track line ── */}
         {laid.map((ms, i) => {
           const isCompany = ms.type === 'company-milestone'
           const isCompleted = ms.status === 'completed'
@@ -418,11 +394,12 @@ function HorizontalTimeline() {
           return (
             <motion.div
               key={ms.id}
-              className="absolute z-20 cursor-pointer"
+              className="absolute cursor-pointer"
               style={{
                 left: `${getPosition(ms.date)}%`,
-                top: 12,
+                top: TRACK_Y,
                 transform: 'translate(-50%, -50%)',
+                zIndex: 20,
               }}
               initial={{ scale: 0, opacity: 0 }}
               whileInView={{ scale: 1, opacity: 1 }}
@@ -462,36 +439,20 @@ function HorizontalTimeline() {
             </motion.div>
           )
         })}
-      </div>
 
-      {/* ── MONTH LABELS ────────────────────────────── */}
-      <div className="relative" style={{ height: MONTH_ROW_H }}>
-        {months.map((month) => (
-          <span
-            key={month.label}
-            className="absolute font-mono text-[10px] uppercase tracking-wider text-text-tertiary"
-            style={{ left: `${month.position}%`, top: 4, transform: 'translateX(-50%)' }}
-          >
-            {month.label}
-          </span>
-        ))}
-      </div>
-
-      {/* ── BELOW LABELS ────────────────────────────── */}
-      {/* Cards anchor top: 0 so connector starts right at top of this area */}
-      <div className="relative" style={{ height: BELOW_H }}>
-        {below.map((ms, i) => (
+        {/* ── LABEL CARDS (above and below) ── */}
+        {laid.map((ms, i) => (
           <LabelCard
             key={ms.id}
             ms={ms}
             isHovered={hoveredId === ms.id}
             onHover={() => setHoveredId(ms.id)}
             onLeave={() => setHoveredId(null)}
-            side="below"
-            connectorHeight={ms.connectorHeight}
+            side={ms.side}
             index={i}
           />
         ))}
+
       </div>
     </div>
   )
