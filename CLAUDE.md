@@ -404,6 +404,40 @@ NEXT_PUBLIC_VERCEL_ANALYTICS_ID=<id>
 
 ---
 
+## Work Log Protocol — MANDATORY
+
+The project maintains a `WORKLOG.md` file in the project root. This is the project's institutional memory.
+
+### At Session Start
+1. **Read `WORKLOG.md`** to understand recent changes, decisions, and current state
+2. Note what was done last so you don't repeat work or contradict recent decisions
+
+### At Session End (or after significant work)
+1. **Append a new entry** to the top of `WORKLOG.md` (below the header, above previous entries)
+2. Use this format:
+
+```markdown
+## YYYY-MM-DD — Brief Session Title
+
+### Changes
+- **Feature/fix name**: One-line description of what changed and why
+
+### Files Modified
+- `path/to/file.tsx` — What was changed
+
+### Decisions
+- Any architectural decisions, trade-offs, or rules established this session
+```
+
+### Rules
+- **Reverse chronological** — newest entry always at top
+- **Be specific** — file paths, component names, CSS values changed
+- **Record decisions** — "We chose X over Y because Z" prevents future Claude from re-debating
+- **Keep entries concise** — summary-level, not line-by-line diffs
+- **Always auto-deploy** — build → commit → push after every change (Vercel auto-deploys from main)
+
+---
+
 ## Quality Checklist — Before Every Commit
 
 - [ ] All colors use CSS variable tokens
