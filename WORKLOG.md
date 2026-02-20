@@ -4,6 +4,28 @@
 
 ---
 
+## 2026-02-19 — ProjectTimeline Widget & Integration
+
+### Changes
+- **ProjectTimeline widget**: Built horizontal milestone timeline with animated track draw-in, status-based dot styling (completed=green, in-progress=pulse, upcoming=ring, company=white), alternating above/below labels, NOW diamond indicator with blue pulse
+- **Responsive design**: HorizontalTimeline for desktop (md+), VerticalTimeline for mobile with chronological stacking
+- **TIMELINE_MILESTONES data**: 5 milestones — Engagement Initiated (Feb 2026), Dashboards (Apr 2026), 3D Animation (May 2026), Marketing Videos (May 2026), IPO (Sep 2026). All data in editable array at top of file.
+- **ClientPortal template extended**: Added `afterHeroSections` prop/slot between Hero and Overview sections
+- **Showcase registry**: Registered ProjectTimeline component with lazy import
+
+### Files Modified
+- `src/components/widgets/ProjectTimeline.tsx` — New: full timeline component (~350 lines)
+- `src/components/portal/ClientPortal.tsx` — Added afterHeroSections slot
+- `src/app/frontieras-work/page.tsx` — Added ProjectTimelineSection wrapper, passed via afterHeroSections prop
+- `src/components/showcase/registry.ts` — Registered ProjectTimeline
+
+### Decisions
+- Timeline positioned AFTER hero and BEFORE Overview/Scope of Work for maximum visibility
+- Used separate horizontal/vertical components rather than CSS-only responsive to keep logic clean
+- NOW indicator uses date comparison to position between milestones dynamically
+
+---
+
 ## 2026-02-19 — Reg A+ Financial Calculator Widget
 
 ### Changes

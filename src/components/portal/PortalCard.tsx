@@ -114,16 +114,19 @@ export function PortalCard({ deliverable, index, workLogEntries = [] }: PortalCa
             <span className="ml-auto shrink-0 rounded-full border border-border-default bg-white/[0.03] px-3 py-1 font-mono text-[11px] text-text-secondary transition-colors group-hover:border-border-hover group-hover:text-text-primary">
               {itemCount} {itemCount === 1 ? 'item' : 'items'}
             </span>
-            <motion.div
-              animate={{ rotate: expanded ? 180 : 0 }}
-              transition={{ duration: 0.3, ease: easeOutExpo }}
+            <div
               className="flex shrink-0 items-center gap-1.5 rounded-md border border-border-default px-3 py-1.5 transition-colors group-hover:border-border-hover group-hover:bg-white/[0.03]"
             >
               <span className="font-mono text-[11px] text-text-secondary transition-colors group-hover:text-text-primary">
                 {expanded ? 'Collapse' : 'Expand'}
               </span>
-              <ChevronDown size={12} className="text-text-secondary transition-colors group-hover:text-text-primary" />
-            </motion.div>
+              <motion.div
+                animate={{ rotate: expanded ? 180 : 0 }}
+                transition={{ duration: 0.3, ease: easeOutExpo }}
+              >
+                <ChevronDown size={12} className="text-text-secondary transition-colors group-hover:text-text-primary" />
+              </motion.div>
+            </div>
           </button>
 
           {/* Expandable content */}
