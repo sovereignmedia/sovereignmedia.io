@@ -23,19 +23,19 @@ export function Footer() {
           <div className="flex gap-8">
             <Link
               href="/work"
-              className="font-mono text-label uppercase tracking-wider text-text-tertiary transition-colors hover:text-text-secondary"
+              className="font-mono text-label uppercase tracking-wider text-text-tertiary transition-colors hover:text-accent-blue"
             >
               Work
             </Link>
             <Link
               href="/#services"
-              className="font-mono text-label uppercase tracking-wider text-text-tertiary transition-colors hover:text-text-secondary"
+              className="font-mono text-label uppercase tracking-wider text-text-tertiary transition-colors hover:text-accent-blue"
             >
               Services
             </Link>
             <Link
               href="/#contact"
-              className="font-mono text-label uppercase tracking-wider text-text-tertiary transition-colors hover:text-text-secondary"
+              className="font-mono text-label uppercase tracking-wider text-text-tertiary transition-colors hover:text-accent-blue"
             >
               Contact
             </Link>

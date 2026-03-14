@@ -62,10 +62,10 @@ export default function WorkPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           >
-            <span className="font-mono text-label uppercase tracking-[0.2em] text-text-tertiary">
+            <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent-blue">
               Portfolio
             </span>
-            <h1 className="mt-4 font-display text-display-sm font-semibold text-text-primary md:text-display-md">
+            <h1 className="mt-4 font-display text-display-sm text-text-primary md:text-display-md">
               Selected work.
             </h1>
           </motion.div>
@@ -84,8 +84,8 @@ export default function WorkPage() {
                 className={cn(
                   'rounded-md px-4 py-2 font-mono text-label uppercase tracking-wider transition-all duration-fast',
                   activeCategory === cat.value
-                    ? 'bg-white text-black'
-                    : 'bg-bg-card text-text-secondary hover:bg-bg-card-hover hover:text-text-primary'
+                    ? 'bg-accent-blue text-black'
+                    : 'bg-bg-card text-text-secondary hover:bg-bg-card-hover hover:text-accent-blue'
                 )}
               >
                 {cat.label}

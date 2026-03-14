@@ -45,7 +45,7 @@ export function ProgressBar({ progress, label, index }: ProgressBarProps) {
             style={{
               background: isComplete
                 ? 'linear-gradient(to right, var(--color-success), #22dd77)'
-                : 'linear-gradient(to right, var(--color-accent-blue), #E5960A)',
+                : 'linear-gradient(to right, var(--color-accent-blue), #FB923C)',
             }}
             initial={{ width: '0%' }}
             whileInView={{ width: `${progress}%` }}
@@ -62,7 +62,7 @@ export function ProgressBar({ progress, label, index }: ProgressBarProps) {
               style={{
                 background: isComplete
                   ? 'rgba(0, 204, 102, 0.3)'
-                  : 'rgba(217, 119, 6, 0.3)',
+                  : 'rgba(249, 115, 22, 0.3)',
                 filter: 'blur(4px)',
               }}
             />

@@ -27,8 +27,8 @@
 
   /* Accent Colors — Orange editorial (token name kept as "blue" for compatibility) */
   --color-accent-primary: #FFFFFF;
-  --color-accent-blue: #D97706;
-  --color-accent-glow: rgba(217, 119, 6, 0.15);
+  --color-accent-blue: #f97316;
+  --color-accent-glow: rgba(249, 115, 22, 0.15);
 
   /* Semantic Colors */
   --color-success: #00CC66;
@@ -152,11 +152,25 @@
     @apply py-24 md:py-32;
   }
 
-  /* Card Base */
+  /* Card Base — orange accent hover from editorial reference */
   .card {
-    @apply border border-border-subtle bg-bg-card p-6
-           transition-all duration-normal ease-out-expo
-           hover:border-border-hover hover:bg-bg-card-hover;
+    @apply relative border border-border-subtle bg-bg-card p-6
+           transition-all duration-slow ease-out-expo;
+  }
+
+  .card:hover {
+    border-color: rgba(249, 115, 22, 0.4);
+  }
+
+  .card::before {
+    content: '';
+    @apply absolute inset-0 opacity-0 transition-opacity duration-slow;
+    background: rgba(249, 115, 22, 0.03);
+    pointer-events: none;
+  }
+
+  .card:hover::before {
+    @apply opacity-100;
   }
 
   /* Label — Uppercase Tracking */
@@ -243,16 +257,16 @@
   background: var(--color-text-primary);
   border: none;
   cursor: pointer;
-  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.6), 0 0 10px rgba(217, 119, 6, 0.15);
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.6), 0 0 10px rgba(249, 115, 22, 0.15);
   transition: box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .slider-input::-webkit-slider-thumb:hover {
-  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.6), 0 0 16px rgba(217, 119, 6, 0.4);
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.6), 0 0 16px rgba(249, 115, 22, 0.4);
 }
 
 .slider-input::-webkit-slider-thumb:active {
-  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.6), 0 0 20px rgba(217, 119, 6, 0.5);
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.6), 0 0 20px rgba(249, 115, 22, 0.5);
   transform: scale(1.1);
 }
 
@@ -263,11 +277,11 @@
   background: var(--color-text-primary);
   border: none;
   cursor: pointer;
-  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.6), 0 0 10px rgba(217, 119, 6, 0.15);
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.6), 0 0 10px rgba(249, 115, 22, 0.15);
 }
 
 .slider-input::-moz-range-thumb:hover {
-  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.6), 0 0 16px rgba(217, 119, 6, 0.4);
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.6), 0 0 16px rgba(249, 115, 22, 0.4);
 }
 
 .slider-input::-moz-range-track {
@@ -307,7 +321,7 @@
 .prose-sovereign a {
   @apply text-accent-blue underline underline-offset-4
          transition-colors duration-fast hover:decoration-accent-blue;
-  text-decoration-color: rgba(217, 119, 6, 0.3);
+  text-decoration-color: rgba(249, 115, 22, 0.3);
 }
 
 .prose-sovereign code {

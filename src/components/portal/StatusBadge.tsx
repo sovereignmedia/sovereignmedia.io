@@ -39,12 +39,12 @@ const ACTIVE_STYLES: Record<string, StatusConfig> = {
     glowPulse: '0 0 20px rgba(255, 170, 0, 0.3)',
   },
   Ongoing: {
-    bg: 'rgba(217, 119, 6, 0.08)',
+    bg: 'rgba(249, 115, 22, 0.08)',
     text: 'var(--color-accent-blue)',
-    border: 'rgba(217, 119, 6, 0.3)',
-    borderPulse: 'rgba(217, 119, 6, 0.55)',
-    glow: '0 0 12px rgba(217, 119, 6, 0.15)',
-    glowPulse: '0 0 20px rgba(217, 119, 6, 0.4)',
+    border: 'rgba(249, 115, 22, 0.3)',
+    borderPulse: 'rgba(249, 115, 22, 0.55)',
+    glow: '0 0 12px rgba(249, 115, 22, 0.15)',
+    glowPulse: '0 0 20px rgba(249, 115, 22, 0.4)',
   },
 }
 

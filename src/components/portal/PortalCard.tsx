@@ -239,7 +239,7 @@ export function PortalCard({ deliverable, index, workLogEntries = [] }: PortalCa
                   href={deliverable.pricing.invoiceUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-md bg-accent-blue px-4 py-2 font-mono text-xs font-medium text-white transition-all duration-300 hover:bg-accent-blue/85 hover:shadow-[0_0_20px_rgba(217,119,6,0.25)]"
+                  className="inline-flex items-center gap-2 rounded-md bg-accent-blue px-4 py-2 font-mono text-xs font-medium text-white transition-all duration-300 hover:bg-accent-blue/85 hover:shadow-[0_0_20px_rgba(249,115,22,0.25)]"
                 >
                   View Invoice
                   <ArrowRight size={12} />

@@ -19,7 +19,7 @@ const variants = {
   ghost:
     'bg-transparent text-text-secondary hover:text-text-primary hover:bg-bg-card',
   outline:
-    'bg-transparent text-text-primary border border-border hover:border-border-hover',
+    'bg-transparent text-text-primary border border-border hover:border-accent-blue/40 hover:text-accent-blue',
 }
 
 const sizes = {

@@ -53,7 +53,7 @@ export function Navigation() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="font-mono text-label uppercase tracking-wider text-text-secondary transition-colors duration-fast hover:text-text-primary"
+                  className="font-mono text-label uppercase tracking-wider text-text-secondary transition-colors duration-fast hover:text-accent-blue"
                 >
                   {item.label}
                 </Link>

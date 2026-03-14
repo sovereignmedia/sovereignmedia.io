@@ -105,7 +105,7 @@ function PremiumSlider({
           style={{
             width: `${percentage}%`,
             background:
-              'linear-gradient(90deg, var(--color-accent-blue), rgba(217, 119, 6, 0.7))',
+              'linear-gradient(90deg, var(--color-accent-blue), rgba(249, 115, 22, 0.7))',
           }}
         />
 
@@ -161,7 +161,7 @@ function MetricCard({ label, value, highlight, accent }: MetricCardProps) {
       )}
       style={
         highlight
-          ? { boxShadow: '0 0 20px rgba(217, 119, 6, 0.08)' }
+          ? { boxShadow: '0 0 20px rgba(249, 115, 22, 0.08)' }
           : undefined
       }
     >
@@ -172,7 +172,7 @@ function MetricCard({ label, value, highlight, accent }: MetricCardProps) {
         )}
         style={
           accent
-            ? { textShadow: '0 0 24px rgba(217, 119, 6, 0.25)' }
+            ? { textShadow: '0 0 24px rgba(249, 115, 22, 0.25)' }
             : undefined
         }
       >
@@ -252,7 +252,7 @@ function ComparisonChart({
           {/* Net savings */}
           <motion.div
             className="absolute inset-y-0 rounded-r-md"
-            style={{ backgroundColor: 'rgba(217, 119, 6, 0.2)' }}
+            style={{ backgroundColor: 'rgba(249, 115, 22, 0.2)' }}
             animate={{
               left: `${optimizedPct}%`,
               width: `${netSavingsPct}%`,
@@ -263,7 +263,7 @@ function ComparisonChart({
           {feePct > 0.5 && (
             <motion.div
               className="absolute inset-y-0 rounded-r-md"
-              style={{ backgroundColor: 'rgba(217, 119, 6, 0.4)' }}
+              style={{ backgroundColor: 'rgba(249, 115, 22, 0.4)' }}
               animate={{
                 left: `${optimizedPct + netSavingsPct}%`,
                 width: `${feePct}%`,
@@ -285,7 +285,7 @@ function ComparisonChart({
         <div className="flex items-center gap-2">
           <div
             className="h-2.5 w-2.5 rounded-sm"
-            style={{ backgroundColor: 'rgba(217, 119, 6, 0.2)' }}
+            style={{ backgroundColor: 'rgba(249, 115, 22, 0.2)' }}
           />
           <span className="font-mono text-[10px] text-text-tertiary">
             Net Savings
@@ -294,7 +294,7 @@ function ComparisonChart({
         <div className="flex items-center gap-2">
           <div
             className="h-2.5 w-2.5 rounded-sm"
-            style={{ backgroundColor: 'rgba(217, 119, 6, 0.4)' }}
+            style={{ backgroundColor: 'rgba(249, 115, 22, 0.4)' }}
           />
           <span className="font-mono text-[10px] text-text-tertiary">
             SM Performance Fee
@@ -575,7 +575,7 @@ function IpoTab() {
       {/* Value ratio */}
       <div
         className="rounded-lg border border-accent-blue/20 bg-accent-blue/[0.03] px-5 py-4"
-        style={{ boxShadow: '0 0 24px rgba(217, 119, 6, 0.05)' }}
+        style={{ boxShadow: '0 0 24px rgba(249, 115, 22, 0.05)' }}
       >
         <span className="font-mono text-xs uppercase tracking-wider text-text-tertiary">
           Value Creation Ratio
@@ -601,7 +601,7 @@ function IpoTab() {
               )}
               style={
                 scenario.featured
-                  ? { boxShadow: '0 0 20px rgba(217, 119, 6, 0.06)' }
+                  ? { boxShadow: '0 0 20px rgba(249, 115, 22, 0.06)' }
                   : undefined
               }
             >
@@ -614,7 +614,7 @@ function IpoTab() {
               <div
                 className="mt-1 font-mono text-xl font-semibold text-accent-blue"
                 style={{
-                  textShadow: '0 0 20px rgba(217, 119, 6, 0.2)',
+                  textShadow: '0 0 20px rgba(249, 115, 22, 0.2)',
                 }}
               >
                 +{formatCurrency(capImpact, true)}

@@ -300,13 +300,13 @@ function HorizontalTimeline() {
             <motion.div
               className="h-3 w-3 rotate-45 rounded-sm"
               style={{ backgroundColor: 'var(--color-accent-blue)' }}
-              animate={{ boxShadow: ['0 0 8px rgba(217, 119, 6,0.3)', '0 0 18px rgba(217, 119, 6,0.6)', '0 0 8px rgba(217, 119, 6,0.3)'] }}
+              animate={{ boxShadow: ['0 0 8px rgba(249, 115, 22,0.3)', '0 0 18px rgba(249, 115, 22,0.6)', '0 0 8px rgba(249, 115, 22,0.3)'] }}
               transition={{ duration: 2.5, repeat: Infinity }}
             />
           </motion.div>
           <span
             className="absolute font-mono text-[9px] font-semibold tracking-[0.15em] text-accent-blue"
-            style={{ top: -18, left: '50%', transform: 'translateX(-50%)', whiteSpace: 'nowrap', textShadow: '0 0 8px rgba(217, 119, 6,0.4)' }}
+            style={{ top: -18, left: '50%', transform: 'translateX(-50%)', whiteSpace: 'nowrap', textShadow: '0 0 8px rgba(249, 115, 22,0.4)' }}
           >
             NOW
           </span>
@@ -322,8 +322,8 @@ function HorizontalTimeline() {
           const isCo     = ms.type === 'company-milestone'
           const color    = isComp ? 'var(--color-success)' : (ms.color ?? 'var(--color-accent-blue)')
           const dotSize  = isCo ? 12 : 9
-          const glowB    = isCo ? '0 0 10px rgba(0,204,102,0.3)' : isComp ? '0 0 10px rgba(0,204,102,0.4)' : '0 0 10px rgba(217, 119, 6,0.3)'
-          const glowH    = isCo ? '0 0 18px rgba(0,204,102,0.5)' : isComp ? '0 0 18px rgba(0,204,102,0.6)' : '0 0 18px rgba(217, 119, 6,0.5)'
+          const glowB    = isCo ? '0 0 10px rgba(0,204,102,0.3)' : isComp ? '0 0 10px rgba(0,204,102,0.4)' : '0 0 10px rgba(249, 115, 22,0.3)'
+          const glowH    = isCo ? '0 0 18px rgba(0,204,102,0.5)' : isComp ? '0 0 18px rgba(0,204,102,0.6)' : '0 0 18px rgba(249, 115, 22,0.5)'
           const chronoIdx = chronoOrder[ms.id]
           const msDelay   = MILESTONE_START + chronoIdx * MILESTONE_STAGGER
 
@@ -488,7 +488,7 @@ function VerticalTimeline() {
                   {isIP ? (
                     <motion.div
                       style={{ width: dotSize, height: dotSize, borderRadius: '50%', backgroundColor: color }}
-                      animate={{ boxShadow: ['0 0 8px rgba(217, 119, 6,0.3)', '0 0 16px rgba(217, 119, 6,0.55)', '0 0 8px rgba(217, 119, 6,0.3)'] }}
+                      animate={{ boxShadow: ['0 0 8px rgba(249, 115, 22,0.3)', '0 0 16px rgba(249, 115, 22,0.55)', '0 0 8px rgba(249, 115, 22,0.3)'] }}
                       transition={{ duration: 2.5, repeat: Infinity }}
                     />
                   ) : (
@@ -496,7 +496,7 @@ function VerticalTimeline() {
                       width: dotSize, height: dotSize, borderRadius: '50%',
                       backgroundColor: ms.status === 'upcoming' ? 'transparent' : color,
                       border: ms.status === 'upcoming' ? `1.5px solid ${color}` : 'none',
-                      boxShadow: '0 0 8px rgba(217, 119, 6,0.25)',
+                      boxShadow: '0 0 8px rgba(249, 115, 22,0.25)',
                     }} />
                   )}
                 </div>
@@ -515,7 +515,7 @@ function VerticalTimeline() {
                   <motion.div
                     className="h-2.5 w-2.5 rotate-45 rounded-sm"
                     style={{ backgroundColor: 'var(--color-accent-blue)', marginLeft: -4 }}
-                    animate={{ boxShadow: ['0 0 6px rgba(217, 119, 6,0.3)', '0 0 12px rgba(217, 119, 6,0.55)', '0 0 6px rgba(217, 119, 6,0.3)'] }}
+                    animate={{ boxShadow: ['0 0 6px rgba(249, 115, 22,0.3)', '0 0 12px rgba(249, 115, 22,0.55)', '0 0 6px rgba(249, 115, 22,0.3)'] }}
                     transition={{ duration: 2.5, repeat: Infinity }}
                   />
                   <span className="font-mono text-[9px] font-semibold tracking-[0.15em] text-accent-blue">NOW</span>

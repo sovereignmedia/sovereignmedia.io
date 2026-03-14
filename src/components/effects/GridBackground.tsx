@@ -40,7 +40,7 @@ export function GridBackground({ className, variant = 'default' }: GridBackgroun
           className="absolute inset-0"
           style={{
             background:
-              'radial-gradient(ellipse 40% 60% at 50% 0%, rgba(217,119,6,0.06) 0%, transparent 60%)',
+              'radial-gradient(ellipse 40% 60% at 50% 0%, rgba(249,115,22,0.06) 0%, transparent 60%)',
           }}
         />
       )}
@@ -64,7 +64,7 @@ export function GlowOrb({
   delay?: number
 }) {
   const colors = {
-    blue: 'rgba(217, 119, 6, 0.08)',
+    blue: 'rgba(249, 115, 22, 0.08)',
     white: 'rgba(255, 255, 255, 0.03)',
   }
 

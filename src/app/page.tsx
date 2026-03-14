@@ -97,7 +97,7 @@ function SplashStage({ onEnter }: { onEnter: () => void }) {
         className="pointer-events-none absolute inset-0"
         style={{
           background:
-            'radial-gradient(ellipse 50% 40% at 50% 50%, rgba(217, 119, 6, 0.04) 0%, transparent 70%)',
+            'radial-gradient(ellipse 50% 40% at 50% 50%, rgba(249, 115, 22, 0.04) 0%, transparent 70%)',
         }}
       />
 
@@ -108,7 +108,7 @@ function SplashStage({ onEnter }: { onEnter: () => void }) {
           width: 600,
           height: 600,
           background:
-            'radial-gradient(circle, rgba(217, 119, 6, 0.06) 0%, transparent 70%)',
+            'radial-gradient(circle, rgba(249, 115, 22, 0.06) 0%, transparent 70%)',
         }}
         animate={{ opacity: [0.3, 0.6, 0.3], scale: [0.95, 1.05, 0.95] }}
         transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
@@ -204,7 +204,7 @@ function PasswordStage({ onSuccess }: { onSuccess: () => void }) {
         className="pointer-events-none absolute inset-0"
         style={{
           background:
-            'radial-gradient(ellipse 50% 40% at 50% 50%, rgba(217, 119, 6, 0.04) 0%, transparent 70%)',
+            'radial-gradient(ellipse 50% 40% at 50% 50%, rgba(249, 115, 22, 0.04) 0%, transparent 70%)',
         }}
       />
 
@@ -355,7 +355,7 @@ function HomeContent({ showNav }: { showNav: boolean }) {
             className="mx-auto max-w-4xl text-center"
           >
             <motion.div variants={fadeUp}>
-              <span className="inline-block font-mono text-label uppercase tracking-[0.2em] text-text-tertiary">
+              <span className="inline-block font-mono text-[10px] uppercase tracking-[0.3em] text-accent-blue">
                 Strategic Marketing Architecture
               </span>
             </motion.div>
@@ -434,10 +434,10 @@ function HomeContent({ showNav }: { showNav: boolean }) {
             transition={{ duration: 0.8, ease: easeOutExpo }}
             className="mb-16"
           >
-            <span className="font-mono text-label uppercase tracking-[0.2em] text-text-tertiary">
-              Services
+            <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent-blue">
+              01 / Services
             </span>
-            <h2 className="mt-4 font-display text-display-sm font-semibold text-text-primary md:text-display-md">
+            <h2 className="mt-4 font-display text-display-sm text-text-primary md:text-display-md">
               Full-spectrum marketing
               <br />
               <span className="text-text-secondary">leadership.</span>
@@ -460,9 +460,10 @@ function HomeContent({ showNav }: { showNav: boolean }) {
               >
                 <div className="flex items-start justify-between">
                   <div>
-                    <h3 className="font-display text-heading-md font-semibold text-text-primary">
+                    <h3 className="font-display text-heading-md text-text-primary transition-colors duration-300 group-hover:text-accent-blue">
                       {service.label}
                     </h3>
+                    <div className="mt-3 h-px w-8 bg-accent-blue/40 transition-all duration-500 group-hover:w-full" />
                     <p className="mt-3 max-w-md text-body-sm text-text-secondary">
                       {service.description}
                     </p>
@@ -495,10 +496,10 @@ function HomeContent({ showNav }: { showNav: boolean }) {
               viewport={{ once: true, margin: '-100px' }}
               transition={{ duration: 0.8, ease: easeOutExpo }}
             >
-              <span className="font-mono text-label uppercase tracking-[0.2em] text-text-tertiary">
-                Approach
+              <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent-blue">
+                02 / Approach
               </span>
-              <h2 className="mt-4 font-display text-display-sm font-semibold text-text-primary md:text-display-md">
+              <h2 className="mt-4 font-display text-display-sm text-text-primary md:text-display-md">
                 Strategy before tactics.
               </h2>
               <div className="mt-8 space-y-6">
@@ -532,7 +533,10 @@ function HomeContent({ showNav }: { showNav: boolean }) {
             transition={{ duration: 0.8, ease: easeOutExpo }}
             className="mx-auto max-w-2xl text-center"
           >
-            <h2 className="font-display text-display-sm font-semibold text-text-primary md:text-display-md">
+            <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent-blue">
+              03 / Contact
+            </span>
+            <h2 className="mt-4 font-display text-display-sm text-text-primary md:text-display-md">
               Ready to talk strategy?
             </h2>
             <p className="mt-6 text-body-lg text-text-secondary">
