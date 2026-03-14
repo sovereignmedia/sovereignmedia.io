@@ -60,12 +60,12 @@ function DateGroup({ group, defaultOpen }: { group: { date: string; entries: Pro
                       !isLast ? 'pb-6' : 'pb-0'
                     )}
                     style={{
-                      borderLeft: '1px solid rgba(0, 102, 255, 0.15)',
+                      borderLeft: '1px solid rgba(217, 119, 6, 0.15)',
                     }}
                   >
                     <div
                       className="absolute -left-[4.5px] top-1.5 h-[9px] w-[9px] rounded-full border-[1.5px] border-accent-blue bg-bg-primary"
-                      style={{ boxShadow: '0 0 6px rgba(0, 102, 255, 0.3)' }}
+                      style={{ boxShadow: '0 0 6px rgba(217, 119, 6, 0.3)' }}
                     />
                     <h4 className="text-body-sm font-medium text-text-primary">
                       {entry.title}

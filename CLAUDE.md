@@ -5,7 +5,7 @@
 **Business:** Sovereign Media — Strategic marketing consultancy & fractional CMO services
 **Owner:** Chase Paisley
 **Site Purpose:** Premium portfolio, client proposal delivery, password-protected client portals, interactive widget showcase
-**Aesthetic:** Dark tech minimalism — Palantir/Anduril/Linear-tier visual language. Pure black backgrounds, surgical white text, atmospheric depth, institutional-grade design.
+**Aesthetic:** Dark editorial minimalism — sharp, zero-radius, condensed typography. Pure black backgrounds, surgical white text, warm orange accent, atmospheric noise overlay, institutional-grade design.
 **Domain:** sovereignmedia.io (or as configured)
 
 ---
@@ -14,11 +14,11 @@
 
 | Layer | Technology | Version |
 |-------|-----------|---------|
-| Framework | Next.js (App Router) | 14+ |
+| Framework | Next.js (App Router) | 15.x |
 | Language | TypeScript | 5.x |
 | Styling | Tailwind CSS + CSS Variables | 3.x |
-| Animation | Framer Motion | 11.x |
-| 3D Effects | Three.js / React Three Fiber | (optional, per page) |
+| Animation | Framer Motion + GSAP | 11.x / 3.x |
+| Smooth Scroll | Lenis | 1.x |
 | Auth | NextAuth.js | 5.x (v5 beta) |
 | Content | MDX + gray-matter | - |
 | Deployment | GitHub → Vercel | - |
@@ -47,8 +47,8 @@ Every component, page, and UI element MUST use the design token system. Never ha
 --color-border-hover: #3A3A3A        /* Hover state borders */
 
 --color-accent-primary: #FFFFFF      /* Primary accent — white */
---color-accent-blue: #0066FF         /* Strategic blue accent — use VERY sparingly */
---color-accent-glow: rgba(0,102,255,0.15) /* Blue glow for atmospheric effects */
+--color-accent-blue: #D97706         /* Orange editorial accent (token name kept as "blue" for compat) */
+--color-accent-glow: rgba(217,119,6,0.15) /* Orange glow for atmospheric effects */
 
 --color-success: #00CC66
 --color-warning: #FFAA00
@@ -57,9 +57,9 @@ Every component, page, and UI element MUST use the design token system. Never ha
 
 ### Typography
 ```
---font-display: 'Söhne Breit', 'Instrument Sans', sans-serif   /* Headlines, hero text */
---font-body: 'Söhne', 'Geist', sans-serif                       /* Body text, UI */
---font-mono: 'Söhne Mono', 'Geist Mono', monospace              /* Code, data, labels */
+--font-display: 'Bebas Neue', sans-serif                        /* Headlines, hero text (condensed uppercase) */
+--font-body: 'IBM Plex Sans', sans-serif                         /* Body text, UI */
+--font-mono: 'IBM Plex Mono', monospace                          /* Code, data, labels */
 
 /* Scale */
 --text-xs: 0.75rem      /* 12px — labels, captions */
@@ -95,10 +95,10 @@ Use Tailwind spacing scale (4px base). Key values:
 
 ### Border Radius
 ```
---radius-sm: 4px       /* Buttons, badges */
---radius-md: 8px       /* Cards, inputs */
---radius-lg: 12px      /* Panels, modals */
---radius-xl: 16px      /* Large containers */
+--radius-sm: 0px       /* Sharp editorial — all zero */
+--radius-md: 0px       /* Sharp editorial — all zero */
+--radius-lg: 0px       /* Sharp editorial — all zero */
+--radius-xl: 0px       /* Sharp editorial — all zero */
 ```
 
 ---
@@ -197,7 +197,7 @@ cn('base-classes', conditional && 'conditional-classes', className)
 ```
 
 ### Animation Pattern
-Use Framer Motion for all animations. Standard entrance pattern:
+Use Framer Motion for component animations and GSAP for scroll-driven effects. Standard entrance pattern:
 
 ```tsx
 <motion.div
@@ -322,7 +322,7 @@ interface Proposal {
 
 2. **White is the voice.** Primary text is always pure `#FFFFFF`. Secondary text is `#A0A0A0`. Never use off-white or cream.
 
-3. **Blue is the signal.** `#0066FF` is used surgically — a single accent in a CTA, a hover glow, a data highlight. If there's more than 2-3 blue elements visible on screen at once, there's too much.
+3. **Orange is the signal.** `#D97706` is used surgically — a single accent in a CTA, a hover glow, a data highlight. If there's more than 2-3 orange elements visible on screen at once, there's too much.
 
 4. **Borders are whispers.** Borders are `1px` and use `--color-border-subtle` or `--color-border-default`. They define space without shouting. Prefer `border-opacity` over solid borders.
 

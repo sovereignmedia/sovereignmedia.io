@@ -42,7 +42,7 @@ export function Navigation() {
             {/* Logo */}
             <Link
               href="/"
-              className="font-display text-lg font-semibold tracking-tight text-text-primary transition-opacity hover:opacity-80"
+              className="font-display text-xl tracking-wide text-text-primary transition-opacity hover:opacity-80"
             >
               SOVEREIGN MEDIA
             </Link>

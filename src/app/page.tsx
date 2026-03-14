@@ -97,7 +97,7 @@ function SplashStage({ onEnter }: { onEnter: () => void }) {
         className="pointer-events-none absolute inset-0"
         style={{
           background:
-            'radial-gradient(ellipse 50% 40% at 50% 50%, rgba(0, 102, 255, 0.04) 0%, transparent 70%)',
+            'radial-gradient(ellipse 50% 40% at 50% 50%, rgba(217, 119, 6, 0.04) 0%, transparent 70%)',
         }}
       />
 
@@ -108,7 +108,7 @@ function SplashStage({ onEnter }: { onEnter: () => void }) {
           width: 600,
           height: 600,
           background:
-            'radial-gradient(circle, rgba(0, 102, 255, 0.06) 0%, transparent 70%)',
+            'radial-gradient(circle, rgba(217, 119, 6, 0.06) 0%, transparent 70%)',
         }}
         animate={{ opacity: [0.3, 0.6, 0.3], scale: [0.95, 1.05, 0.95] }}
         transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
@@ -204,7 +204,7 @@ function PasswordStage({ onSuccess }: { onSuccess: () => void }) {
         className="pointer-events-none absolute inset-0"
         style={{
           background:
-            'radial-gradient(ellipse 50% 40% at 50% 50%, rgba(0, 102, 255, 0.04) 0%, transparent 70%)',
+            'radial-gradient(ellipse 50% 40% at 50% 50%, rgba(217, 119, 6, 0.04) 0%, transparent 70%)',
         }}
       />
 
@@ -362,7 +362,7 @@ function HomeContent({ showNav }: { showNav: boolean }) {
 
             <motion.h1
               variants={fadeUp}
-              className="mt-6 font-display text-display-lg font-semibold leading-[1.05] tracking-tight text-text-primary md:text-display-xl"
+              className="mt-6 font-display text-display-lg leading-[1.05] tracking-wide text-text-primary md:text-display-xl"
             >
               Measurable capital
               <br />

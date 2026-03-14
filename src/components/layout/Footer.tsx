@@ -10,7 +10,7 @@ export function Footer() {
           <div>
             <Link
               href="/"
-              className="font-display text-lg font-semibold tracking-tight text-text-primary"
+              className="font-display text-xl tracking-wide text-text-primary"
             >
               SOVEREIGN MEDIA
             </Link>

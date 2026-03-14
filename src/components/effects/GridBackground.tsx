@@ -19,7 +19,7 @@ export function GridBackground({ className, variant = 'default' }: GridBackgroun
             linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
             linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)
           `,
-          backgroundSize: '64px 64px',
+          backgroundSize: '60px 60px',
         }}
       />
 
@@ -29,7 +29,7 @@ export function GridBackground({ className, variant = 'default' }: GridBackgroun
           className="absolute inset-0"
           style={{
             background:
-              'radial-gradient(ellipse 50% 50% at 50% 50%, transparent 0%, #0B1215 70%)',
+              'radial-gradient(ellipse 50% 50% at 50% 50%, transparent 0%, #000000 70%)',
           }}
         />
       )}
@@ -40,29 +40,17 @@ export function GridBackground({ className, variant = 'default' }: GridBackgroun
           className="absolute inset-0"
           style={{
             background:
-              'radial-gradient(ellipse 40% 60% at 50% 0%, rgba(0,102,255,0.06) 0%, transparent 60%)',
+              'radial-gradient(ellipse 40% 60% at 50% 0%, rgba(217,119,6,0.06) 0%, transparent 60%)',
           }}
         />
       )}
-
-      {/* Noise Texture */}
-      <svg className="absolute inset-0 h-full w-full opacity-[0.015]">
-        <filter id="grid-noise">
-          <feTurbulence
-            type="fractalNoise"
-            baseFrequency="0.9"
-            numOctaves="4"
-            stitchTiles="stitch"
-          />
-        </filter>
-        <rect width="100%" height="100%" filter="url(#grid-noise)" />
-      </svg>
     </div>
   )
 }
 
 /**
  * Animated glow orb — floating ambient light effect.
+ * Note: "blue" prop name kept for compatibility — renders orange per reskin.
  */
 export function GlowOrb({
   className,
@@ -76,7 +64,7 @@ export function GlowOrb({
   delay?: number
 }) {
   const colors = {
-    blue: 'rgba(0, 102, 255, 0.08)',
+    blue: 'rgba(217, 119, 6, 0.08)',
     white: 'rgba(255, 255, 255, 0.03)',
   }
 

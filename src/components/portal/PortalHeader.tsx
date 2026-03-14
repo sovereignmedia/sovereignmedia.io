@@ -12,7 +12,7 @@ export function PortalHeader({ confidential = true }: PortalHeaderProps) {
       <div className="mx-auto flex h-16 w-full max-w-5xl items-center justify-between px-6 md:px-8">
         <Link
           href="/"
-          className="font-display text-lg font-semibold tracking-tight text-text-primary transition-opacity hover:opacity-80"
+          className="font-display text-xl tracking-wide text-text-primary transition-opacity hover:opacity-80"
         >
           SOVEREIGN MEDIA
         </Link>

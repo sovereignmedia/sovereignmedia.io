@@ -4,6 +4,47 @@
 
 ---
 
+## 2026-03-14 — Visual Reskin: Editorial Aesthetic
+
+### Changes
+- **Design tokens overhaul**: Swapped entire color system from teal-tinted darks to pure neutral blacks. Accent color from blue (#0066FF) to orange (#D97706). All border radii set to 0px for sharp editorial look.
+- **Typography swap**: Replaced Instrument Sans + Geist with Bebas Neue (display) + IBM Plex Sans (body) + IBM Plex Mono (mono). Removed `geist` package.
+- **New dependencies**: Added `gsap` and `lenis` for GSAP animations and smooth scrolling.
+- **AnimatedNoise component**: Canvas-based animated noise overlay at 3% opacity with mix-blend-mode overlay, renders at half res for performance.
+- **SmoothScroll component**: Lenis smooth scroll provider connected to GSAP ScrollTrigger.
+- **Hardcoded color purge**: Replaced all ~40 hardcoded `rgba(0,102,255,...)` references across 10+ files with `rgba(217,119,6,...)`.
+- **GridBackground update**: Grid size 64px→60px, removed SVG noise (replaced by AnimatedNoise), updated spotlight/radial colors.
+- **Typography tracking**: Changed `tracking-tight` to `tracking-wide` on all display font headings for Bebas Neue compatibility.
+
+### Files Modified
+- `package.json` / `pnpm-lock.yaml` — Added gsap, lenis; removed geist
+- `src/styles/globals.css` — Complete token overhaul (colors, fonts, radii, scrollbar, slider, prose)
+- `tailwind.config.ts` — Border radius 0px, display font letter-spacing positive
+- `src/app/layout.tsx` — Bebas Neue + IBM Plex font imports, AnimatedNoise, SmoothScroll
+- `src/app/page.tsx` — Orange atmospheric glows, tracking-wide on hero
+- `src/components/effects/GridBackground.tsx` — Orange colors, 60px grid, removed SVG noise
+- `src/components/effects/AnimatedNoise.tsx` — New file
+- `src/components/effects/SmoothScroll.tsx` — New file
+- `src/components/layout/Navigation.tsx` — tracking-wide on logo
+- `src/components/layout/Footer.tsx` — tracking-wide on logo
+- `src/components/portal/PortalHeader.tsx` — tracking-wide on logo
+- `src/components/portal/StatusBadge.tsx` — Orange status colors
+- `src/components/portal/ProgressBar.tsx` — Orange gradient/glow
+- `src/components/portal/WorkLog.tsx` — Orange timeline
+- `src/components/portal/PortalCard.tsx` — Orange hover shadow
+- `src/components/portal/PricingCard.tsx` — Orange hover shadow
+- `src/components/widgets/ProjectTimeline.tsx` — Orange NOW indicator, milestone glows
+- `src/components/widgets/RegACalculator.tsx` — Orange slider, charts, metric cards
+- `CLAUDE.md` — Updated design system docs
+
+### Decisions
+- Kept CSS variable name `--color-accent-blue` despite now being orange — avoids renaming 38 Tailwind class references. Added comments explaining this.
+- Bebas Neue only has weight 400 — `font-semibold` on display elements is harmless (silently ignored)
+- `rounded-full` elements (status pills, dots) unaffected by radius change (hardcoded 9999px, not token-based)
+- Using both Framer Motion (existing components) and GSAP (new scroll effects) — coexist via SmoothScroll provider
+
+---
+
 ## 2026-02-19 — ProjectTimeline Major Fixes & PortalCard Expand Button Fix
 
 ### Changes
